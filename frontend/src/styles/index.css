@@ -1,0 +1,131 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Montserrat";
+  src: url("../fonts/Montserrat-VariableFont_wght.ttf");
+}
+
+@theme {
+
+  --animate-fadeleft: fadeInLeft 1.3s ease forwards;
+
+  @keyframes fadeInLeft {
+    0% {
+      opacity: 0;
+      transform: translateX(-30px);
+    }
+
+    100% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+}
+}
+
+@keyframes fadeInRight {
+  0% {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@theme {
+
+  --animate-fadebottom: fadeInBottom 1.3s ease forwards;
+
+  @keyframes fadeInBottom{
+    0% {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+@theme {
+
+  --animate-fadetop: fadeInTop 1.3s ease forwards;
+
+  @keyframes fadeInTop{
+    0% {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+@theme {
+  
+  --animate-wipedown: wipeFromToptoBottom 1.3s ease forwards;
+
+  @keyframes wipeFromToptoBottom {
+    from {
+      transform: scaleY(1);
+    }
+
+    to {
+      transform: scaleY(0);
+    }
+  }
+}
+
+@theme {
+  /* Define the utility class name and its properties */
+  --animate-slidedown: fadeSlideDown 0.2s ease-out forwards;
+  
+  @keyframes fadeSlideDown {
+    0% {
+      transform: translateY(-20px);
+      opacity: 0;
+    }
+    
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+}
+@theme {
+  --animate-slide: slide 5s linear infinite;
+}
+
+@keyframes slide {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0%);
+  }
+}
+
+body {
+  /* background-image: url("../assets/topographymap.png"); */
+
+  box-sizing: border-box;
+  font-family: "Montserrat";
+  margin: 0;
+  padding: 0;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+.app {
+
+}
