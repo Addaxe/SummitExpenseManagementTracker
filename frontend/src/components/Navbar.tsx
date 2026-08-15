@@ -136,7 +136,7 @@ const Navbar = () => {
               {!authTokenValid ? (
                 <>
                   <li
-                    className="bg-[#ffbb00] border-b border-[#bbbbbb] opacity-1 text-black text-center w-full z-40 animate-slidedown"
+                    className="bg-[#ffbb00] border-b border-[#bbbbbb] opacity-1 text-[#26382f] text-center w-full z-40 animate-slidedown"
                     style={{ animationDelay: `120ms` }}
                   >
                     <NavLink className="flex flex-1 items-center justify-center py-5" to="/demo" onClick={() => handleMenuState()}>Book Demo</NavLink>
@@ -158,7 +158,7 @@ const Navbar = () => {
                     <NavLink className="flex flex-1 items-center justify-center py-5" to="/dashboard" onClick={() => handleMenuState()}>Dashboard</NavLink>
                   </li>
                   <li
-                    className="bg-[#ffbb00] border-b border-[#bbbbbb] opacity-1 text-black text-center w-full z-40 animate-slidedown"
+                    className="bg-[#ffbb00] border-b border-[#bbbbbb] opacity-1 text-[#26382f] text-center w-full z-40 animate-slidedown"
                     style={{ animationDelay: `150ms` }}
                   >
                     <NavLink className="flex flex-1 items-center justify-center py-5" to="/demo" onClick={() => handleMenuState()}>Book Demo</NavLink>
