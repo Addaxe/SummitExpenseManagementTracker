@@ -1,12 +1,25 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
+import ProfilePlaceholder from "../assets/dashboarddesigns/profileplaceholder.avif"
 import summitLogoGreen from "../assets/summitgreen.png";
 
 
 const Navbar = () => {
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const authTokenValid = true;
 
+  const cardInfo = {
+    "firstName": "Applecidervinegar",
+    "lastName": "WithLemonJuiceOnTop",
+    "position": "Employee",
+    "digits": "4242424242424242",
+    "expirationMonth": "8",
+    "expirationYear": "30",
+    "balance": "1,483.86",
+    "limit": "3000.00",
+  }
+  
   const links = [
   { name: "Home", path: "/" },
   { name: "About", path: "/about" },
@@ -54,10 +67,31 @@ const Navbar = () => {
               " to="/careers">Careers</NavLink>
             </li>
             <li>
-              <NavLink className="
-              bg-[#ffbb00] font-medium inline-flex no-underline px-5 py-2.5 relative rounded-sm text-sm text-[#26382f] tracking=[1.2px] transition-[background-color] duration-300 ease-out
-              hover:bg-black hover:text-white
-              " to="/login" >Login</NavLink>
+              {!authTokenValid ? (
+              <li>
+              <NavLink className="bg-[#ffbb00] font-medium inline-flex no-underline px-5 py-2.5 relative rounded-sm text-sm text-[#26382f] tracking-[1.2px] transition-[background-color] duration-300 ease-out hover:bg-black hover:text-white"
+              to="/login">
+                  Login
+              </NavLink>
+            </li>
+            ) : (
+            <li className="bg-white p-1 text-[#26382f]">
+              <NavLink
+                to="/profile"
+                className="flex flex-row gap-3 items-center"
+              >
+              <img src={ProfilePlaceholder} alt="Profile Picture" className="w-9 h-9 rounded-full"/>
+              <div className="flex flex-col items-start justify-center pr-3">
+                <span className="font-semibold text-nowrap text-sm">
+                  {`${cardInfo.firstName.slice(0, 15)} ${cardInfo.lastName.charAt(0)}.`}
+                </span>
+                <span className="font-medium text-[10px]">
+                  {cardInfo.position}
+                </span>
+              </div>
+              </NavLink>
+            </li>
+            )}
             </li>
           </ul>
           <div
