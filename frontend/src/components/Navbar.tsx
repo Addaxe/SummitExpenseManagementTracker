@@ -7,7 +7,7 @@ import summitLogoGreen from "../assets/summitgreen.png";
 const Navbar = () => {
 
   const [menuOpen, setMenuOpen] = useState(false);
-  const authTokenValid = true;
+  const authTokenValid = true; // Changing this when I properly check user authentication
 
   const cardInfo = {
     "firstName": "Applecidervinegar",
@@ -20,11 +20,10 @@ const Navbar = () => {
     "limit": "3000.00",
   }
   
-  const links = [
-  { name: "Home", path: "/" },
+  const menuOptions = [
   { name: "About", path: "/about" },
-  { name: "Services", path: "/services" },
-  { name: "Careers", path: "/careers" },
+  { name: "Products", path: "/products" },
+  { name: "Pricing", path: "/pricing" },
   ];
 
   const handleMenuState = () => {
@@ -37,60 +36,51 @@ const Navbar = () => {
         <NavLink to="/">
           <img alt="Summit" className="h-auto py-3 w-25" src={summitLogoGreen}/>
         </NavLink>   
-        <ul className="hidden items-center min-[900px]:flex gap-19 list-none mx-0 my-1">
+        <ul className="gap-19 hidden items-center min-[900px]:flex list-none mx-0 my-1">
+          {menuOptions.map((option) => {
+            return (
+              <li>
+              <NavLink className="
+                font-medium inline-flex no-underline px-0 py-3 relative text-sm text-[#26382f] tracking-[1px] z-1 transition duration-200
+                before:absolute before:bottom-0 before:border-b-2 before:border-[#26382f] before:content-[''] before:right-0 before:top-0 before:transition-[width] before:duration-200 before:ease-out before:w-0 before:-z-1
+                hover:before:left-0 hover:before:right-auto hover:before:w-full
+                " to={option.path}>{option.name}</NavLink>
+            </li>
+            )
+          })}
+            {authTokenValid && (
             <li>
               <NavLink className="
-              font-medium inline-flex no-underline px-0 py-3 relative text-sm text-[#26382f] tracking-[1.2px] z-1 transition duration-200
+              font-medium inline-flex no-underline px-0 py-3 relative text-sm text-[#26382f] tracking-[0.5px] z-1 transition duration-200
               before:absolute before:bottom-0 before:border-b-2 before:border-[#26382f] before:content-[''] before:right-0 before:top-0 before:transition-[width] before:duration-200 before:ease-out before:w-0 before:-z-1
               hover:before:left-0 hover:before:right-auto hover:before:w-full
-              " to="/">Home</NavLink>
+              " to="/dashboard">Dashboard</NavLink>
             </li>
-            <li>
-              <NavLink className="
-              font-medium inline-flex no-underline px-0 py-3 relative text-sm text-[#26382f] tracking-[1.2px] z-1 transition duration-200
-              before:absolute before:bottom-0 before:border-b-2 before:border-[#26382f] before:content-[''] before:right-0 before:top-0 before:transition-[width] before:duration-200 before:ease-out before:w-0 before:-z-1
-              hover:before:left-0 hover:before:right-auto hover:before:w-full
-              " to="/about">About</NavLink>
-            </li>
-            <li>
-              <NavLink className="
-              font-medium inline-flex no-underline px-0 py-3 relative text-sm text-[#26382f] tracking-[1.2px] z-1 transition duration-200
-              before:absolute before:bottom-0 before:border-b-2 before:border-[#26382f] before:content-[''] before:right-0 before:top-0 before:transition-[width] before:duration-200 before:ease-out before:w-0 before:-z-1
-              hover:before:left-0 hover:before:right-auto hover:before:w-full
-              " to="/services">Services</NavLink>
-            </li>
-            <li>
-              <NavLink className="
-              font-medium inline-flex no-underline px-0 py-3 relative text-sm text-[#26382f] tracking-[1.2px] z-1 transition duration-200
-              before:absolute before:bottom-0 before:border-b-2 before:border-[#26382f] before:content-[''] before:right-0 before:top-0 before:transition-[width] before:duration-200 before:ease-out before:w-0 before:-z-1
-              hover:before:left-0 hover:before:right-auto hover:before:w-full
-              " to="/careers">Careers</NavLink>
-            </li>
+            )}
             <li>
               {!authTokenValid ? (
-              <li>
-              <NavLink className="bg-[#ffbb00] font-medium inline-flex no-underline px-5 py-2.5 relative rounded-sm text-sm text-[#26382f] tracking-[1.2px] transition-[background-color] duration-300 ease-out hover:bg-black hover:text-white"
-              to="/login">
-                  Login
-              </NavLink>
-            </li>
+                <div className="flex flex-row gap-3 items-center justify-center h-full">
+                  <li>
+                    <NavLink className="bg-[#ffbb00] font-medium inline-flex no-underline px-4 py-2.5 relative rounded-sm text-sm text-[#26382f] tracking-[0.5px] transition-[background-color, color] duration-300 ease-out hover:bg-black hover:text-white"
+                    to="/demo">
+                      Book Demo
+                    </NavLink>
+                  </li>
+                  <span className="bg-gray-300 h-9 w-[1.5px]"></span>
+                  <li>
+                    <NavLink className="bg-[#26382f] font-medium inline-flex no-underline px-4 py-2.5 relative rounded-sm text-sm text-white tracking-[1px] transition-[background-color, color] duration-300 ease-out hover:bg-black hover:text-white"
+                    to="/login">
+                      Login
+                    </NavLink>
+                  </li>
+                </div>
             ) : (
-            <li className="bg-white p-1 text-[#26382f]">
-              <NavLink
-                to="/profile"
-                className="flex flex-row gap-3 items-center"
-              >
-              <img src={ProfilePlaceholder} alt="Profile Picture" className="w-9 h-9 rounded-full"/>
-              <div className="flex flex-col items-start justify-center pr-3">
-                <span className="font-semibold text-nowrap text-sm">
-                  {`${cardInfo.firstName.slice(0, 15)} ${cardInfo.lastName.charAt(0)}.`}
-                </span>
-                <span className="font-medium text-[10px]">
-                  {cardInfo.position}
-                </span>
-              </div>
-              </NavLink>
-            </li>
+              <li>
+                <NavLink className="bg-[#ffbb00] font-medium inline-flex no-underline px-4 py-2.5 relative rounded-sm text-sm text-[#26382f] tracking-[1px] transition-[background-color] duration-300 ease-out hover:bg-black hover:text-white"
+                  to="/">
+                    Sign Out
+                </NavLink>
+              </li>
             )}
             </li>
           </ul>
@@ -134,21 +124,55 @@ const Navbar = () => {
           </div>
           {menuOpen && 
             <ul className="absolute flex flex-col h-screen items-center left-0 top-full w-full min-[900px]:hidden">
-              {links.map((link, index) => (
+              {menuOptions.map((option, index) => (
                 <li
-                  key={link.path}
+                  key={option.path}
                   className="bg-white border-b border-[#bbbbbb] opacity-1 text-center w-full z-40 animate-slidedown"
                   style={{ animationDelay: `${index * 30}ms` }}
                 >
-                  <NavLink className="flex flex-1 items-center justify-center py-5" to={link.path} onClick={() => handleMenuState()}>{link.name}</NavLink>
+                  <NavLink className="flex flex-1 items-center justify-center py-5" to={option.path} onClick={() => handleMenuState()}>{option.name}</NavLink>
                 </li>
               ))}
-              <li
-                  className="bg-black border-b border-black opacity-1 text-white text-center w-full z-40 animate-slidedown"
-                  style={{ animationDelay: `120ms` }}
-                >
-                  <NavLink className="flex flex-1 items-center justify-center py-5" to="/login" onClick={() => handleMenuState()}>Login</NavLink>
-              </li>
+              {!authTokenValid ? (
+                <>
+                  <li
+                    className="bg-[#ffbb00] border-b border-[#bbbbbb] opacity-1 text-black text-center w-full z-40 animate-slidedown"
+                    style={{ animationDelay: `120ms` }}
+                  >
+                    <NavLink className="flex flex-1 items-center justify-center py-5" to="/demo" onClick={() => handleMenuState()}>Book Demo</NavLink>
+                  </li>
+                  <li
+                    className="bg-[#26382f] border-b border-[#bbbbbb] opacity-1 text-white text-center w-full z-40 animate-slidedown"
+                    style={{ animationDelay: `150ms` }}
+                  >
+                    <NavLink className="flex flex-1 items-center justify-center py-5" to="/login" onClick={() => handleMenuState()}>Login</NavLink>
+                  </li>
+                  
+                </>
+              ) : (
+                <>
+                  <li
+                    className="bg-white border-b border-[#bbbbbb] opacity-1 text-center w-full z-40 animate-slidedown"
+                    style={{ animationDelay: `120ms`}}
+                  >
+                    <NavLink className="flex flex-1 items-center justify-center py-5" to="/dashboard" onClick={() => handleMenuState()}>Dashboard</NavLink>
+                  </li>
+                  <li
+                    className="bg-[#ffbb00] border-b border-[#bbbbbb] opacity-1 text-black text-center w-full z-40 animate-slidedown"
+                    style={{ animationDelay: `150ms` }}
+                  >
+                    <NavLink className="flex flex-1 items-center justify-center py-5" to="/demo" onClick={() => handleMenuState()}>Book Demo</NavLink>
+                  </li>
+                  <li
+                    className="bg-[#26382f] border-b border-[#bbbbbb] opacity-1 text-white text-center w-full z-40 animate-slidedown"
+                    style={{ animationDelay: `180ms` }}
+                  >
+                    <NavLink className="flex flex-1 items-center justify-center py-5" to="/" onClick={() => handleMenuState()}>Sign Out</NavLink>
+                  </li>
+                </>
+              )}
+              
+              
               <div className="absolute inset-0 bg-black/30 backdrop-blur-md z-30"/>
             </ul>
           }
