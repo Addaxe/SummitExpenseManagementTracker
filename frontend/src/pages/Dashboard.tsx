@@ -123,7 +123,7 @@ const Dashboard = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="flex flex-col h-full justify-between text-[#26382f]">
+                  <div className="flex flex-col gap-7 h-full justify-between text-[#26382f]">
                     <div className="flex flex-col items-center justify-center">
                       <h1 className="text-center text-sm">Welcome back!</h1>
                       <p className="font-bold text-nowrap text-lg">{`${cardInfo.firstName.slice(0, 10)} ${cardInfo.lastName.slice(0, 11)}`}</p>
@@ -161,24 +161,24 @@ const Dashboard = () => {
                 </div>
               </div>
               <div key="bottom" className="animate-fadebottom flex flex-wrap gap-7 min-h-79.5">
-                <div key="employee-info" className="bg-[#26382f] border border-[#bbbbbb] flex flex-col gap-3 h-full items-start justify-center p-10 relative rounded-lg text-white
+                <div key="employee-info" className="bg-[#26382f] border border-[#bbbbbb] flex flex-col gap-3 h-full items-start justify-center max-w-81 p-10 relative rounded-lg text-white
                     before:absolute before:bg-[repeating-radial-gradient(circle_at_120%_120%,transparent_0px,transparent_14px,rgba(34,197,94,0.08)_15px,rgba(34,197,94,0.08)_16px)] before:content-[''] before:inset-0 before:pointer-events-none"
                 >
                   <span className="flex flex-col items-start justify-center">
                     <h1 className="text-sm">Company Name</h1>
-                    <p className="font-bold text-lg">{cardInfo.company}</p>
+                    <p className="font-bold text-lg wrap-anywhere">{cardInfo.company}</p>
                   </span>
                   <span className="flex flex-col items-start justify-center">
                     <h1 className="text-sm">{cardInfo.role} Name</h1>
-                    <p className="font-bold text-lg">{`${cardInfo.firstName.slice(0, 10)} ${cardInfo.lastName.slice(0, 11)}`}</p>
+                    <p className="font-bold text-lg wrap-anywhere ">{`${cardInfo.firstName.slice(0, 10)} ${cardInfo.lastName.slice(0, 11)}`}</p>
                   </span>
                   <span className="flex flex-col items-start justify-center">
                     <h1 className="text-sm">Position</h1>
-                    <p className="font-bold text-lg">{cardInfo.position}</p>
+                    <p className="font-bold text-lg wrap-anywhere ">{cardInfo.position}</p>
                   </span>
                   <span className="flex flex-col items-start justify-center">
                     <h1 className="text-sm">Department</h1>
-                    <p className="font-bold text-lg">{cardInfo.department}</p>
+                    <p className="font-bold text-lg wrap-anywhere ">{cardInfo.department}</p>
                   </span>
                 </div>
               </div> 
