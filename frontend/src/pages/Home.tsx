@@ -85,8 +85,8 @@ const Home = () => {
 
                   <button 
                   type="submit" 
-                  className="bg-[#ffbb00] cursor-pointer font-medium px-5 py-2.5 relative rounded-md text-[#26382f] text-xs transition-[background-color] duration-300 ease-out sm:text-sm
-                  hover:bg-black hover:text-white">
+                  className="bg-[#ffbb00] bg-linear-to-br from-[#ffbb00] via-[#ffcc33] to-[#ffbb00] cursor-pointer font-medium m-0.75 px-5.5 py-2.5 relative rounded-md text-[#26382f] text-xs transition-all duration-300 ease-out sm:text-sm
+                  hover:from-[#26382f] hover:via-[#2d4037] hover:to-[#26382f] hover:bg-[#26382f] hover:text-white">
                     Join Us
                   </button>
                 </form>

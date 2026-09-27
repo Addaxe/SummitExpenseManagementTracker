@@ -61,14 +61,16 @@ const Navbar = () => {
               {!authTokenValid ? (
                 <div className="flex flex-row gap-3 items-center justify-center h-full">
                   <li>
-                    <NavLink className="bg-[#ffbb00] font-medium inline-flex no-underline px-4 py-2.5 relative rounded-sm text-sm text-[#26382f] tracking-[0.5px] transition-[background-color, color] duration-300 ease-out hover:bg-black hover:text-white"
+                    <NavLink className="bg-[#ffbb00] bg-linear-to-br from-[#ffbb00] via-[#ffcc33] to-[#ffbb00] font-medium inline-flex no-underline px-5 py-3 relative rounded-md text-sm text-[#26382f] tracking-[0.5px] transition-all duration-300 ease-out
+                    hover:from-[#26382f] hover:via-[#2d4037] hover:to-[#26382f] hover:bg-[#26382f] hover:text-white"
                     to="/demo">
                       Book Demo
                     </NavLink>
                   </li>
                   <span className="bg-gray-300 h-9 w-[1.5px]"></span>
                   <li>
-                    <NavLink className="bg-[#26382f] font-medium inline-flex no-underline px-4 py-2.5 relative rounded-sm text-sm text-white tracking-[1px] transition-[background-color, color] duration-300 ease-out hover:bg-black hover:text-white"
+                    <NavLink className="bg-[#26382f] bg-linear-to-br from-[#26382f] via-[#2d4037] to-[#26382f] font-medium inline-flex no-underline px-5 py-3 relative rounded-md text-sm text-white tracking-[1px] transition-all duration-300 ease-out
+                    hover:bg-none hover:bg-black hover:text-white"
                     to="/login">
                       Login
                     </NavLink>
@@ -76,7 +78,8 @@ const Navbar = () => {
                 </div>
             ) : (
               <li>
-                <NavLink className="bg-[#ffbb00] font-medium inline-flex no-underline px-4 py-2.5 relative rounded-sm text-sm text-[#26382f] tracking-[1px] transition-[background-color] duration-300 ease-out hover:bg-black hover:text-white"
+                <NavLink className="bg-[#ffbb00] bg-linear-to-br from-[#ffbb00] via-[#ffcc33] to-[#ffbb00] font-medium inline-flex no-underline px-5 py-3 relative rounded-md text-sm text-[#26382f] tracking-[1px] transition-all duration-300 ease-out
+                hover:from-[#26382f] hover:via-[#2d4037] hover:to-[#26382f] hover:bg-[#26382f] hover:text-white"
                   to="/">
                     Sign Out
                 </NavLink>
