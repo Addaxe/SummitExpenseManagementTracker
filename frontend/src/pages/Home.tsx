@@ -117,7 +117,7 @@ const Home = () => {
               </div>
             </div>
 
-            <div className="relative bg-[rgba(231,231,231,0.6)] p-5 overflow-hidden w-full h-fit text-center font-semibold text-xl tracking-[1.2px] text-[#585858] ">
+            <div className="relative bg-[rgba(231,231,231,0.6)] p-5 overflow-hidden w-full h-fit text-center font-semibold text-xl text-[#585858] ">
               <h1 className="mb-5">Trusted by 5,000+ top companies</h1>
               <div className="flex w-max gap-[1em] animate-[slide_60s_linear_infinite] h-full">
                 {[...companies, ...companies, ...companies].map((company, index) => (
