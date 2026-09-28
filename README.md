@@ -71,3 +71,51 @@ Summit is being developed as a full-stack application with a separated frontend 
 │         PostgreSQL          │
 │        Financial Data       │
 └─────────────────────────────┘
+```
+
+## Design
+
+The application's interface is designed in **Figma** before implementation. This allows me to iterate on user flows and layouts before translating them into reusable React components.
+
+The design process currently focuses on:
+
+- Employee dashboard experience
+- Expense management workflows
+- Form usability
+- Responsive layouts
+- Consistent component design
+
+## Goals
+
+As development continues, Summit will evolve toward a functional expense management system supporting workflows such as:
+
+- Employee expense submission
+- Expense tracking and categorization
+- Receipt management
+- Expense approval workflows
+- User authentication and authorization
+- Financial data persistence
+- Employee and manager experiences
+
+Features listed above represent the project's development goals and may not yet be implemented.
+
+## What I'm Learning
+
+Summit is also an opportunity to develop a deeper understanding of fintech and full-stack engineering.
+
+Through the project, I'm learning about:
+
+- Financial data modeling
+- REST API design
+- Relational database design
+- Frontend/backend integration
+- Authentication and authorization
+- Product and UX design
+- Building software in an unfamiliar domain
+- Translating product requirements into technical implementations
+
+## Development
+
+Summit is actively being developed, and its architecture and features will continue to evolve as the project progresses.
+
+Built by **Arianna Escobar-Reyes**.
