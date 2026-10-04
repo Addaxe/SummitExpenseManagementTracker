@@ -8,17 +8,6 @@ const Navbar = () => {
 
   const [menuOpen, setMenuOpen] = useState(false);
   const authTokenValid = true; // Changing this when I properly check user authentication
-
-  const cardInfo = {
-    "firstName": "Applecidervinegar",
-    "lastName": "WithLemonJuiceOnTop",
-    "position": "Employee",
-    "digits": "4242424242424242",
-    "expirationMonth": "8",
-    "expirationYear": "30",
-    "balance": "1,483.86",
-    "limit": "3000.00",
-  }
   
   const menuOptions = [
   { name: "About", path: "/about" },
@@ -39,7 +28,7 @@ const Navbar = () => {
         <ul className="gap-19 hidden items-center min-[900px]:flex list-none mx-0 my-1">
           {menuOptions.map((option) => {
             return (
-              <li>
+              <li key={option.path}>
               <NavLink className="
                 font-medium inline-flex no-underline px-0 py-3 relative text-sm text-[#26382f] transition duration-200
                 before:absolute before:bottom-0 before:border-b-2 before:border-[#26382f] before:content-[''] before:right-0 before:top-0 before:transition-[width] before:duration-200 before:ease-out before:w-0 before:-z-1
@@ -57,35 +46,33 @@ const Navbar = () => {
               " to="/dashboard">Dashboard</NavLink>
             </li>
             )}
+            {!authTokenValid ? (
+              <div className="flex flex-row gap-3 items-center justify-center h-full">
+                <li>
+                  <NavLink className="bg-[#ffbb00] bg-linear-to-br from-[#ffbb00] via-[#ffcc33] to-[#ffbb00] font-medium inline-flex no-underline px-5 py-2.5 relative rounded-md text-sm text-[#26382f] transition-all duration-300 ease-out
+                  hover:from-[#26382f] hover:via-[#2d4037] hover:to-[#26382f] hover:bg-[#26382f] hover:text-white"
+                  to="/demo">
+                    Book Demo
+                  </NavLink>
+                </li>
+                <span className="bg-gray-300 h-9 w-[1.5px]"></span>
+                <li>
+                  <NavLink className="bg-[#26382f] bg-linear-to-br from-[#26382f] via-[#2d4037] to-[#26382f] font-medium inline-flex no-underline px-5 py-2.5 relative rounded-md text-sm text-white transition-all duration-300 ease-out
+                  hover:bg-none hover:bg-black hover:text-white"
+                  to="/login">
+                    Login
+                  </NavLink>
+                </li>
+              </div>
+          ) : (
             <li>
-              {!authTokenValid ? (
-                <div className="flex flex-row gap-3 items-center justify-center h-full">
-                  <li>
-                    <NavLink className="bg-[#ffbb00] bg-linear-to-br from-[#ffbb00] via-[#ffcc33] to-[#ffbb00] font-medium inline-flex no-underline px-5 py-2.5 relative rounded-md text-sm text-[#26382f] transition-all duration-300 ease-out
-                    hover:from-[#26382f] hover:via-[#2d4037] hover:to-[#26382f] hover:bg-[#26382f] hover:text-white"
-                    to="/demo">
-                      Book Demo
-                    </NavLink>
-                  </li>
-                  <span className="bg-gray-300 h-9 w-[1.5px]"></span>
-                  <li>
-                    <NavLink className="bg-[#26382f] bg-linear-to-br from-[#26382f] via-[#2d4037] to-[#26382f] font-medium inline-flex no-underline px-5 py-2.5 relative rounded-md text-sm text-white transition-all duration-300 ease-out
-                    hover:bg-none hover:bg-black hover:text-white"
-                    to="/login">
-                      Login
-                    </NavLink>
-                  </li>
-                </div>
-            ) : (
-              <li>
-                <NavLink className="bg-[#ffbb00] bg-linear-to-br from-[#ffbb00] via-[#ffcc33] to-[#ffbb00] font-medium inline-flex no-underline px-5 py-2.5 relative rounded-md text-sm text-[#26382f] transition-all duration-300 ease-out
-                hover:from-[#26382f] hover:via-[#2d4037] hover:to-[#26382f] hover:bg-[#26382f] hover:text-white"
-                  to="/">
-                    Sign Out
-                </NavLink>
-              </li>
-            )}
+              <NavLink className="bg-[#ffbb00] bg-linear-to-br from-[#ffbb00] via-[#ffcc33] to-[#ffbb00] font-medium inline-flex no-underline px-5 py-2.5 relative rounded-md text-sm text-[#26382f] transition-all duration-300 ease-out
+              hover:from-[#26382f] hover:via-[#2d4037] hover:to-[#26382f] hover:bg-[#26382f] hover:text-white"
+                to="/">
+                  Sign Out
+              </NavLink>
             </li>
+            )}
           </ul>
           <div
             className="flex flex-col justify-center cursor-pointer min-[900px]:hidden"
@@ -125,59 +112,59 @@ const Navbar = () => {
               />
             </div>
           </div>
-          {menuOpen && 
-            <ul className="absolute flex flex-col h-screen items-center left-0 top-full w-full min-[900px]:hidden">
-              {menuOptions.map((option, index) => (
-                <li
-                  key={option.path}
-                  className="bg-white border-b border-[#bbbbbb] opacity-1 text-center w-full z-40 animate-slidedown"
-                  style={{ animationDelay: `${index * 30}ms` }}
-                >
-                  <NavLink className="flex flex-1 items-center justify-center py-5" to={option.path} onClick={() => handleMenuState()}>{option.name}</NavLink>
-                </li>
-              ))}
-              {!authTokenValid ? (
-                <>
+          {menuOpen &&
+            <>
+              <div className="fixed bg-black/30 backdrop-blur-md inset-0 top-18.25 z-30"/>
+              <ul className="absolute flex flex-col h-screen items-center left-0 top-full w-full min-[900px]:hidden">
+                {menuOptions.map((option, index) => (
                   <li
-                    className="bg-[#ffbb00] border-b border-[#bbbbbb] opacity-1 text-[#26382f] text-center w-full z-40 animate-slidedown"
-                    style={{ animationDelay: `120ms` }}
-                  >
-                    <NavLink className="flex flex-1 items-center justify-center py-5" to="/demo" onClick={() => handleMenuState()}>Book Demo</NavLink>
-                  </li>
-                  <li
-                    className="bg-[#26382f] border-b border-[#bbbbbb] opacity-1 text-white text-center w-full z-40 animate-slidedown"
-                    style={{ animationDelay: `150ms` }}
-                  >
-                    <NavLink className="flex flex-1 items-center justify-center py-5" to="/login" onClick={() => handleMenuState()}>Login</NavLink>
-                  </li>
-                  
-                </>
-              ) : (
-                <>
-                  <li
+                    key={option.path}
                     className="bg-white border-b border-[#bbbbbb] opacity-1 text-center w-full z-40 animate-slidedown"
-                    style={{ animationDelay: `120ms`}}
+                    style={{ animationDelay: `${index * 30}ms` }}
                   >
-                    <NavLink className="flex flex-1 items-center justify-center py-5" to="/dashboard" onClick={() => handleMenuState()}>Dashboard</NavLink>
+                    <NavLink className="flex flex-1 items-center justify-center py-5" to={option.path} onClick={() => handleMenuState()}>{option.name}</NavLink>
                   </li>
-                  <li
-                    className="bg-[#ffbb00] border-b border-[#bbbbbb] opacity-1 text-[#26382f] text-center w-full z-40 animate-slidedown"
-                    style={{ animationDelay: `150ms` }}
-                  >
-                    <NavLink className="flex flex-1 items-center justify-center py-5" to="/demo" onClick={() => handleMenuState()}>Book Demo</NavLink>
-                  </li>
-                  <li
-                    className="bg-[#26382f] border-b border-[#bbbbbb] opacity-1 text-white text-center w-full z-40 animate-slidedown"
-                    style={{ animationDelay: `180ms` }}
-                  >
-                    <NavLink className="flex flex-1 items-center justify-center py-5" to="/" onClick={() => handleMenuState()}>Sign Out</NavLink>
-                  </li>
-                </>
-              )}
-              
-              
-              <div className="absolute inset-0 bg-black/30 backdrop-blur-md z-30"/>
-            </ul>
+                ))}
+                {!authTokenValid ? (
+                  <>
+                    <li
+                      className="bg-[#ffbb00] border-b border-[#bbbbbb] opacity-1 text-[#26382f] text-center w-full z-40 animate-slidedown"
+                      style={{ animationDelay: `120ms` }}
+                    >
+                      <NavLink className="flex flex-1 items-center justify-center py-5" to="/demo" onClick={() => handleMenuState()}>Book Demo</NavLink>
+                    </li>
+                    <li
+                      className="bg-[#26382f] border-b border-[#bbbbbb] opacity-1 text-white text-center w-full z-40 animate-slidedown"
+                      style={{ animationDelay: `150ms` }}
+                    >
+                      <NavLink className="flex flex-1 items-center justify-center py-5" to="/login" onClick={() => handleMenuState()}>Login</NavLink>
+                    </li>
+                    
+                  </>
+                ) : (
+                  <>
+                    <li
+                      className="bg-white border-b border-[#bbbbbb] opacity-1 text-center w-full z-40 animate-slidedown"
+                      style={{ animationDelay: `120ms`}}
+                    >
+                      <NavLink className="flex flex-1 items-center justify-center py-5" to="/dashboard" onClick={() => handleMenuState()}>Dashboard</NavLink>
+                    </li>
+                    <li
+                      className="bg-[#ffbb00] border-b border-[#bbbbbb] opacity-1 text-[#26382f] text-center w-full z-40 animate-slidedown"
+                      style={{ animationDelay: `150ms` }}
+                    >
+                      <NavLink className="flex flex-1 items-center justify-center py-5" to="/demo" onClick={() => handleMenuState()}>Book Demo</NavLink>
+                    </li>
+                    <li
+                      className="bg-[#26382f] border-b border-[#bbbbbb] opacity-1 text-white text-center w-full z-40 animate-slidedown"
+                      style={{ animationDelay: `180ms` }}
+                    >
+                      <NavLink className="flex flex-1 items-center justify-center py-5" to="/" onClick={() => handleMenuState()}>Sign Out</NavLink>
+                    </li>
+                  </>
+                )}
+              </ul>
+            </>
           }
       </nav>
     </div>

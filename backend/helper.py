@@ -1,17 +1,19 @@
-import bcrypt, requests
+import bcrypt
 
 # For Signup
-def valid_name(name: str) -> bool:
-    if not name.isalpha() or len(name) == 0:
-        return False
-    return True
+def valid_name(position: str, name: str) -> bool:
+    if not name.isalpha():
+        return {"message": position + " name cannot contain numbers or spaces", "passed": False, "code": 400}
+    elif not name:
+            return {"message": position + " name cannot be empty", "passed": False, "code": 400}
 
+    return {"message": "", "passed": True, "code": 200}
 
-# returns true if password is 8 - 20 characters long
+# NOTE: Returns true if password is 8 - 20 characters long
 def valid_password(password: str) -> bool:
     if len(password) < 8 or len(password) > 20:
-        return False
-    return True
+        return {"message": "Passwords must be between 8 and 20 characters long", "passed": False, "code": 400}
+    return {"message": "", "passed": True, "code": 200}
 
 def hash_password_bcrypt(password: str) -> str:
     password_bytes = password.encode('utf-8')
