@@ -1,14 +1,15 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from extensions import db
-from helper import *
+import os
 from email_validator import validate_email, EmailNotValidError
+from helper import *
 from models import *
 
 app = Flask(__name__)
 
 # Configure the PostgreSQL connection
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:your_password@localhost:5432/your_db_name'
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize the database extension

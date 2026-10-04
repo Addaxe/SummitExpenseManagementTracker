@@ -1,1 +1,7 @@
 flask
+flask_cors
+flask_sqlalchemy
+psycopg
+bcrypt
+email_validator
+python-dotenv
