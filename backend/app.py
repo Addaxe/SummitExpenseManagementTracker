@@ -2,9 +2,12 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from extensions import db
 import os
+from dotenv import load_dotenv
 from email_validator import validate_email, EmailNotValidError
 from helper import *
 from models import *
+
+load_dotenv()
 
 app = Flask(__name__)
 
@@ -57,6 +60,10 @@ def new_user():
     except EmailNotValidError:
         return jsonify(field="email", error="Email not formatted correctly"), 400
 
+    existing_user = User.query.filter_by(email=email).first()
+    if existing_user:
+        return jsonify(field="email", error="An account with this email already exists"), 409
+
     password_hash = hash_password_bcrypt(password)
 
     user = User(
@@ -69,6 +76,9 @@ def new_user():
     db.session.commit()
 
     return jsonify(message="Signup successful"), 200
+
+with app.app_context():
+    db.create_all()
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
