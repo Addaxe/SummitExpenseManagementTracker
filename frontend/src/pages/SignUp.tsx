@@ -56,7 +56,7 @@ const SignUp = () => {
               to start tracking expenses and managing budgets
             </p>
             {errorData.field && (
-              <div className="bg-red-200 border-[1.5px] border-red-600 mb-6 px-5 py-2 rounded-md text-red-800 text-sm sm:text-base">{errorData.error}</div>
+              <div className="bg-[#fedada] mb-6 px-5 py-2 rounded-md text-red-800! text-sm sm:text-base">{errorData.error}</div>
             )}
             <div className="flex flex-col gap-6 mb-6 sm:flex-row sm:gap-4">
               {/* First Name */}
