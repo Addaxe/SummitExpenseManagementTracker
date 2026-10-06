@@ -1,9 +1,11 @@
 import { useState, type FormEvent } from "react";
-import { Link } from "react-router-dom";
-import TopographicBackground from "../components/TopographyBackground"
+import { Link, useNavigate } from "react-router-dom";
+import TopographicBackground from "../components/TopographyBackground";
 import WarningIcon from '@mui/icons-material/Warning';
 
 const SignUp = () => {
+  const navigate = useNavigate()
+
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -40,6 +42,8 @@ const SignUp = () => {
       }
 
       console.log("Account created successfully!");
+      localStorage.setItem("accessToken", data.accessToken);
+      navigate("/company-setup")
     } catch (err) {
       console.error("Signup error:", err);
     }

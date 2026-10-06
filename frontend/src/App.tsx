@@ -6,6 +6,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/Navbar";
+import CompanySetup from "./pages/CompanySetup";
 import "./styles/index.css";
 import './App.css'
 
@@ -15,14 +16,15 @@ function App() {
     <Router basename={import.meta.env.VITE_BASE_URL}>
       <div className="app">
         <Navbar />
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/signup" element={<SignUp />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/company-setup" element={<CompanySetup />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
       </div>
     </Router>
   )

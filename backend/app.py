@@ -1,5 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from flask_migrate import Migrate
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from extensions import db
 import os
 from dotenv import load_dotenv
@@ -10,6 +12,8 @@ from models import *
 load_dotenv()
 
 app = Flask(__name__)
+app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
+jwt = JWTManager(app)
 
 # Configure the PostgreSQL connection
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
@@ -17,6 +21,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize the database extension
 db.init_app(app)
+migrate = Migrate(app, db)
 
 CORS(
     app,
@@ -70,15 +75,33 @@ def new_user():
         first_name=first_name,
         last_name=last_name,
         email=email,
-        password_hash=password_hash
+        password_hash=password_hash,
+        role="Owner",
     )
     db.session.add(user)
     db.session.commit()
 
-    return jsonify(message="Signup successful"), 200
+    access_token = create_access_token(identity=user.id)
+    return jsonify(message="Signup successful", accessToken=access_token), 201
 
-with app.app_context():
-    db.create_all()
+@app.route("/api/company-setup", methods=["POST"])
+@jwt_required()
+def company_setup():
+    data = request.get_json()
+    company_name = data["companyName"].strip()
+
+    check_valid_company_name = valid_name("Company", company_name)
+    if not check_valid_company_name["passed"]:
+        return jsonify(field="companyName", error=check_valid_company_name["message"]), check_valid_company_name["code"]
+
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+
+    company = Company(
+
+    )
+
+    # ...
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
