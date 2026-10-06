@@ -20,7 +20,7 @@ def valid_password(password: str) -> bool:
         return {"message": "Passwords must be between 8 and 20 characters long", "passed": False, "code": 400}
     return {"message": "", "passed": True, "code": 200}
 
-def validate_company_url(url: str):
+def validate_company_website(url: str):
     """Performs structural, DNS, and live HTTP checks on a business domain."""
     # 1. Structural Validation
     # Cleans input and ensures the URL is syntactically valid
@@ -28,7 +28,7 @@ def validate_company_url(url: str):
         url = "https://" + url
 
     if not validators.url(url):
-        return False, "Invalid URL structure."
+        return {"message": "Invalid URL structure", "passed": False, "code": 400}
 
     parsed = urlparse(url)
     domain = parsed.netloc
@@ -76,13 +76,12 @@ def validate_company_url(url: str):
             response = requests.get(url, headers=headers, timeout=3)
 
         if response.status_code >= 400:
-            return {"message": "Domain does not exist or has no valid DNS records", "passed": False, "code": response.status_code}
-            return False, f"Website returned an error status: {response.status_code}"
+            return {"message": "Website returned an error status: " + {response.status_code}, "passed": False, "code": response.status_code}
 
     except requests.RequestException:
-        return False, "Failed to connect to the website."
+        return {"message": "Failed to connect to the website", "passed": False, "code": 502}
 
-    return True, "URL is valid."
+    return {"message": "", "passed": True, "code": 201, "url": url}
 
 def hash_password_bcrypt(password: str) -> str:
     password_bytes = password.encode('utf-8')

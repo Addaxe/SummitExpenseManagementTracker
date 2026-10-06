@@ -1,8 +1,10 @@
 import { useState, type FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import TopographicBackground from "../components/TopographyBackground";
 import WarningIcon from '@mui/icons-material/Warning';
 
 const CompanySetup = () => {
+  const navigate = useNavigate();
   const [companyName, setCompanyName] = useState("");
   const [companyWebsite, setCompanyWebsite] = useState("");
   const [errorData, setErrorData] = useState<{
@@ -26,18 +28,28 @@ const CompanySetup = () => {
         {
           method: "POST",
           headers: {
+            "Authorization": `Bearer ${token}`,
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            name: companyName,
-            website: companyWebsite,
+            companyName: companyName,
+            companyWebsite: companyWebsite,
           }),
         }
       );
 
       const data = await response.json();
 
+      if (response.status == 401) {
+        localStorage.removeItem("accessToken");
+        navigate("/login");
+        return;
+      }
+
+      if (data.companySetupComplete) {
+        navigate("/dashboard");
+      }
+      
       if (!response.ok) {
         console.error(data);
         return;

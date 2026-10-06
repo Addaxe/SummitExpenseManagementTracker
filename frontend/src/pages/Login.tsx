@@ -1,9 +1,10 @@
 import { useState, type FormEvent } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import TopographicBackground from "../components/TopographyBackground"
 import WarningIcon from '@mui/icons-material/Warning';
 
 const Login = () => {
+  const navigate = useNavigate()
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -34,6 +35,14 @@ const Login = () => {
       if (!response.ok) {
         setErrorData(data)
         return;
+      }
+
+      localStorage.setItem("accessToken",data.accessToken);
+
+      if (data.companySetupComplete) {
+        navigate("/dashboard");
+      } else {
+        navigate("/company-setup");
       }
 
       console.log("Account created successfully!");
