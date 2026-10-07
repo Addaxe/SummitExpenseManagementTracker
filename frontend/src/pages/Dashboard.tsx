@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
 import { subWeeks, startOfWeek, endOfWeek, format } from 'date-fns';
 
 import TopographicCardDesign from "../assets/dashboarddesigns/topographicdesign.png"
@@ -22,6 +22,51 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import WbIncandescentOutlinedIcon from '@mui/icons-material/WbIncandescentOutlined';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+
+  useEffect(() => {
+    const checkAuthentication = async () => {
+      const token = localStorage.getItem("accessToken");
+
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          "http://127.0.0.1:5000/api/dashboard",
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (response.status === 401) {
+          localStorage.removeItem("accessToken");
+          navigate("/login");
+          return;
+        }
+
+        if (!response.ok) {
+          console.error("Dashboard authentication failed");
+          return;
+        }
+
+        setIsCheckingAuth(false);
+
+      } catch (error) {
+        console.error("Dashboard authentication error:", error);
+      }
+    };
+
+    checkAuthentication();
+  }, [navigate]);
+
   // Sidebar Constants
   const [sideBarHidden, hideSideBar] = useState(false) 
   const [sideBarButtonHovered, setIsSideBarButtonHovered] = useState(false)
@@ -227,6 +272,10 @@ const Dashboard = () => {
     });
   };
 
+  if (isCheckingAuth) {
+    return null;
+  }
+  
   return (
     <>
       {/* <TopographicBackground  color1="rgba(116, 150, 127, 0.25)" color2="#f0f0f0"/> */}

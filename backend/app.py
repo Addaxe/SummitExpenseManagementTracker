@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+from datetime import timedelta
 from extensions import db
 import os
 from dotenv import load_dotenv
@@ -13,6 +14,7 @@ load_dotenv()
 
 app = Flask(__name__)
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
 jwt = JWTManager(app)
 
 # Configure the PostgreSQL connection
@@ -161,6 +163,18 @@ def company_setup():
     )
 
     return jsonify( message="Company creation successful", companyId=company.id, accessToken=access_token, companySetupComplete=True), 201
+
+@app.route("/api/dashboard", methods=["GET"])
+@jwt_required()
+def dashboard():
+    user_id = get_jwt_identity()
+
+    user = db.session.get(User, int(user_id))
+
+    if user is None:
+        return jsonify(error="User account could not be found"), 404
+
+    return jsonify(message="Dashboard access granted", userId=user.id, companySetupComplete=user.company_id is not None), 200
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

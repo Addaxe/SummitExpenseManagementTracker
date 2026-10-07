@@ -1,13 +1,31 @@
-import { useState } from "react";
-import { NavLink } from "react-router-dom";
-import ProfilePlaceholder from "../assets/dashboarddesigns/profileplaceholder.avif"
+import { useState, useEffect } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
 import summitLogoGreen from "../assets/summitgreen.png";
 
 
 const Navbar = () => {
-
+  const navigate = useNavigate();
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    Boolean(localStorage.getItem("accessToken"))
+  );
   const [menuOpen, setMenuOpen] = useState(false);
-  const authTokenValid = true; // Changing this when I properly check user authentication
+
+  useEffect(() => {
+    const checkLoginStatus = () => {
+      setIsLoggedIn(Boolean(localStorage.getItem("accessToken")));
+    };
+
+    checkLoginStatus();
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("accessToken");
+    setIsLoggedIn(false);
+    setMenuOpen(false);
+    navigate("/login");
+  };
+
+  //const isLoggedIn = true; // Changing this when I properly check user authentication
   
   const menuOptions = [
   { name: "About", path: "/about" },
@@ -23,7 +41,7 @@ const Navbar = () => {
     <div className="bg-white border-b border-[rgba(0,0,0,.05)] fixed left-0 px-10 py-2.5 top-0 w-full z-50 lg:px-16">
       <nav className="flex items-center justify-between">
         <NavLink to="/">
-          <img alt="Summit" className="h-auto py-3 w-25" src={summitLogoGreen}/>
+          <img alt="Summit" className="h-12.25 py-3 w-auto" src={summitLogoGreen}/>
         </NavLink>   
         <ul className="gap-19 hidden items-center min-[900px]:flex list-none mx-0 my-1">
           {menuOptions.map((option) => {
@@ -37,7 +55,7 @@ const Navbar = () => {
             </li>
             )
           })}
-            {authTokenValid && (
+            {isLoggedIn && (
             <li>
               <NavLink className="
               font-medium inline-flex no-underline px-0 py-3 relative text-sm text-[#26382f] z-1 transition duration-200
@@ -46,7 +64,7 @@ const Navbar = () => {
               " to="/dashboard">Dashboard</NavLink>
             </li>
             )}
-            {!authTokenValid ? (
+            {!isLoggedIn ? (
               <div className="flex flex-row gap-3 items-center justify-center h-full">
                 <li>
                   <NavLink className="bg-[#ffbb00] bg-linear-to-br from-[#ffbb00] via-[#ffcc33] to-[#ffbb00] font-medium inline-flex no-underline px-5 py-2.5 relative rounded-md text-sm text-[#26382f] transition-all duration-300 ease-out
@@ -68,7 +86,8 @@ const Navbar = () => {
             <li>
               <NavLink className="bg-[#ffbb00] bg-linear-to-br from-[#ffbb00] via-[#ffcc33] to-[#ffbb00] font-medium inline-flex no-underline px-5 py-2.5 relative rounded-md text-sm text-[#26382f] transition-all duration-300 ease-out
               hover:from-[#26382f] hover:via-[#2d4037] hover:to-[#26382f] hover:bg-[#26382f] hover:text-white"
-                to="/">
+                to="/"
+                onClick={() => handleLogout()}>
                   Sign Out
               </NavLink>
             </li>
@@ -125,7 +144,7 @@ const Navbar = () => {
                     <NavLink className="flex flex-1 items-center justify-center py-5" to={option.path} onClick={() => handleMenuState()}>{option.name}</NavLink>
                   </li>
                 ))}
-                {!authTokenValid ? (
+                {!isLoggedIn ? (
                   <>
                     <li
                       className="bg-[#ffbb00] border-b border-[#bbbbbb] opacity-1 text-[#26382f] text-center w-full z-40 animate-slidedown"
@@ -159,7 +178,7 @@ const Navbar = () => {
                       className="bg-[#26382f] border-b border-[#bbbbbb] opacity-1 text-white text-center w-full z-40 animate-slidedown"
                       style={{ animationDelay: `180ms` }}
                     >
-                      <NavLink className="flex flex-1 items-center justify-center py-5" to="/" onClick={() => handleMenuState()}>Sign Out</NavLink>
+                      <NavLink className="flex flex-1 items-center justify-center py-5" to="/" onClick={() => handleLogout()}>Sign Out</NavLink>
                     </li>
                   </>
                 )}

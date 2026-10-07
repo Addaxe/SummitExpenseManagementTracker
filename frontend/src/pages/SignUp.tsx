@@ -1,10 +1,11 @@
-import { useState, type FormEvent } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import TopographicBackground from "../components/TopographyBackground";
 import WarningIcon from '@mui/icons-material/Warning';
 
 const SignUp = () => {
   const navigate = useNavigate()
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -16,7 +17,49 @@ const SignUp = () => {
     error?: string;
   }>({});
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  useEffect(() => {
+    const checkAuthentication = async () => {
+      const token = localStorage.getItem("accessToken");
+
+      if (!token) {
+        setIsCheckingAuth(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          "http://127.0.0.1:5000/api/dashboard",
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (response.ok) {
+          // Token is valid → user is already signed in
+          navigate("/dashboard");
+          return;
+        }
+
+        if (response.status === 401) {
+          // Token exists but is expired/invalid
+          localStorage.removeItem("accessToken");
+        }
+
+        setIsCheckingAuth(false);
+
+      } catch (error) {
+        console.error("Authentication check failed:", error);
+        setIsCheckingAuth(false);
+      }
+    };
+
+    checkAuthentication();
+  }, [navigate]);
+
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
 
     try {
@@ -48,6 +91,10 @@ const SignUp = () => {
       console.error("Signup error:", err);
     }
   };
+
+  if (isCheckingAuth) {
+    return null;
+  }
 
   return (
     <>
