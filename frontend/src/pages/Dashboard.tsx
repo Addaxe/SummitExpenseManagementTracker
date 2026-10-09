@@ -6,6 +6,7 @@ import ProfilePlaceholder from "../assets/dashboarddesigns/profileplaceholder.av
 import ViewSidebarOutlinedIcon from '@mui/icons-material/ViewSidebarOutlined';
 import AutoGraphIcon from '@mui/icons-material/AutoGraph';
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
+import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
 import CreditCardOutlinedIcon from '@mui/icons-material/CreditCardOutlined';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
@@ -200,6 +201,16 @@ const Dashboard = () => {
     checkAuthentication();
   }, [navigate, location.pathname, location.search, location.hash]);
 
+  useEffect(() => {
+  if (!location.hash) {
+    window.history.replaceState(
+      window.history.state,
+      "",
+      `${location.pathname}${location.search}#insights`
+    );
+  }
+  }, [location.pathname, location.search, location.hash]);
+
   // Sidebar Constants
   const [sideBarHidden, hideSideBar] = useState(false) 
   const [sideBarButtonHovered, setIsSideBarButtonHovered] = useState(false)
@@ -207,6 +218,7 @@ const Dashboard = () => {
   const sidebarOptions = [
   {name: "Insights", icon: AutoGraphIcon,},
   {name: "Transactions", icon: CurrencyExchangeIcon,},
+  {name: "People", icon: PeopleOutlinedIcon,},
   {name: "Card Services", icon: CreditCardOutlinedIcon,},
   ];
 
@@ -235,8 +247,9 @@ const Dashboard = () => {
                   onMouseEnter={() => setIsSideBarButtonHovered(true)} 
                   onMouseLeave={() => setIsSideBarButtonHovered(false)}
                   onClick={() => setActiveSection(option.name)}
-                  className={`bg-white border border-black/0 cursor-pointer flex group items-center p-3 relative rounded-lg text-center text-[#26382f] transition-all duration-300 ease-out w-full hover:bg-[#26382f] hover:text-white
-                    ${sideBarHidden ? "justify-center" : ""}`}
+                  className={` border border-black/0 cursor-pointer flex group items-center p-3 relative rounded-lg text-[#26382f] text-center transition-all duration-300 ease-out w-full
+                    ${sideBarHidden ? "justify-center" : ""}
+                    ${ activeSection === option.name ? "bg-[#E4F0E9] border-[#C7DCCF]" : "bg-white hover:bg-[#F0F5F1] hover:border-[#D7E5DB]"}`}
                 >
                   <Icon fontSize="medium"/>
                   {!sideBarHidden && (
@@ -271,7 +284,9 @@ const Dashboard = () => {
           </div>
           
           <div className="flex-1 min-h-0 min-w-0 overflow-y-auto">
-            <InsightsSection/>     
+            {activeSection === "Insights" && (
+              <InsightsSection/>
+            )}    
           </div>
         </div>
       </div>

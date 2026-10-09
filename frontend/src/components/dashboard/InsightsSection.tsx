@@ -202,7 +202,7 @@ const InsightsSection = () => {
   };
   
   return (
-    <div className="flex flex-col gap-5">
+    <section id="Insights" className="flex flex-col gap-5">
       <div key="top" className="animate-fadetop flex gap-5 items-start">
         <div key="left" className="relative bg-white border border-black/10 flex-none flex items-stretch overflow-hidden rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.04)]">
         {/* before:absolute before:inset-0 before:content-[''] before:pointer-events-none before:bg-[repeating-radial-gradient(circle_at_50%_100%,transparent_0px,transparent_14px,rgba(0,0,0,0.05)_15px,rgba(0,0,0,0.05)_16px)]"> */}
@@ -389,7 +389,7 @@ const InsightsSection = () => {
             </div>
         </div> */}
       </div> 
-    </div>        
+    </section>        
   );
 };
 

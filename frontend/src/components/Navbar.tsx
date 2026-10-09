@@ -61,7 +61,7 @@ const Navbar = () => {
               font-medium inline-flex no-underline px-0 py-3 relative text-sm text-[#26382f] z-1 transition duration-200
               before:absolute before:bottom-0 before:border-b-2 before:border-[#26382f] before:content-[''] before:right-0 before:top-0 before:transition-[width] before:duration-200 before:ease-out before:w-0 before:-z-1
               hover:before:left-0 hover:before:right-auto hover:before:w-full
-              " to="/dashboard">Dashboard</NavLink>
+              " to="/dashboard#insights">Dashboard</NavLink>
             </li>
             )}
             {!isLoggedIn ? (
@@ -138,7 +138,7 @@ const Navbar = () => {
                 {menuOptions.map((option, index) => (
                   <li
                     key={option.path}
-                    className="bg-white border-b border-[#bbbbbb] opacity-1 text-center w-full z-40 animate-slidedown"
+                    className="bg-white border-b border-black/10 opacity-1 text-center w-full z-40 animate-slidedown"
                     style={{ animationDelay: `${index * 30}ms` }}
                   >
                     <NavLink className="flex flex-1 items-center justify-center py-5" to={option.path} onClick={() => handleMenuState()}>{option.name}</NavLink>
@@ -147,13 +147,13 @@ const Navbar = () => {
                 {!isLoggedIn ? (
                   <>
                     <li
-                      className="bg-[#ffbb00] border-b border-[#bbbbbb] opacity-1 text-[#26382f] text-center w-full z-40 animate-slidedown"
+                      className="bg-[#ffbb00] border-b border-black/10 opacity-1 text-[#26382f] text-center w-full z-40 animate-slidedown"
                       style={{ animationDelay: `120ms` }}
                     >
                       <NavLink className="flex flex-1 items-center justify-center py-5" to="/demo" onClick={() => handleMenuState()}>Book Demo</NavLink>
                     </li>
                     <li
-                      className="bg-[#26382f] border-b border-[#bbbbbb] opacity-1 text-white text-center w-full z-40 animate-slidedown"
+                      className="bg-[#26382f] border-b border-black/10 opacity-1 text-white text-center w-full z-40 animate-slidedown"
                       style={{ animationDelay: `150ms` }}
                     >
                       <NavLink className="flex flex-1 items-center justify-center py-5" to="/login" onClick={() => handleMenuState()}>Login</NavLink>
@@ -163,19 +163,19 @@ const Navbar = () => {
                 ) : (
                   <>
                     <li
-                      className="bg-white border-b border-[#bbbbbb] opacity-1 text-center w-full z-40 animate-slidedown"
+                      className="bg-white border-b border-black/10 opacity-1 text-center w-full z-40 animate-slidedown"
                       style={{ animationDelay: `120ms`}}
                     >
-                      <NavLink className="flex flex-1 items-center justify-center py-5" to="/dashboard" onClick={() => handleMenuState()}>Dashboard</NavLink>
+                      <NavLink className="flex flex-1 items-center justify-center py-5" to="/dashboard#insights" onClick={() => handleMenuState()}>Dashboard</NavLink>
                     </li>
                     <li
-                      className="bg-[#ffbb00] border-b border-[#bbbbbb] opacity-1 text-[#26382f] text-center w-full z-40 animate-slidedown"
+                      className="bg-[#ffbb00] border-b border-black/10 opacity-1 text-[#26382f] text-center w-full z-40 animate-slidedown"
                       style={{ animationDelay: `150ms` }}
                     >
                       <NavLink className="flex flex-1 items-center justify-center py-5" to="/demo" onClick={() => handleMenuState()}>Book Demo</NavLink>
                     </li>
                     <li
-                      className="bg-[#26382f] border-b border-[#bbbbbb] opacity-1 text-white text-center w-full z-40 animate-slidedown"
+                      className="bg-[#26382f] border-b border-black/10 opacity-1 text-white text-center w-full z-40 animate-slidedown"
                       style={{ animationDelay: `180ms` }}
                     >
                       <NavLink className="flex flex-1 items-center justify-center py-5" to="/" onClick={() => handleLogout()}>Sign Out</NavLink>
