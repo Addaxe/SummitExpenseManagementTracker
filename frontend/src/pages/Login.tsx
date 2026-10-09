@@ -35,8 +35,15 @@ const Login = () => {
         );
 
         if (response.ok) {
-          // Token is valid → user is already signed in
-          navigate("/dashboard");
+          const data = await response.json();
+
+          navigate(
+            data.companySetupComplete
+              ? "/dashboard"
+              : "/company-setup",
+            { replace: true }
+        );
+
           return;
         }
 

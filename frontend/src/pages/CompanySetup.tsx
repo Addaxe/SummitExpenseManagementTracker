@@ -40,20 +40,22 @@ const CompanySetup = () => {
 
       const data = await response.json();
 
-      if (response.status == 401) {
+      if (response.status === 401) {
         localStorage.removeItem("accessToken");
-        navigate("/login");
+        navigate("/login", { replace: true });
         return;
       }
 
-      if (data.companySetupComplete) {
-        navigate("/dashboard");
-      }
-      
       if (!response.ok) {
-        console.error(data);
+        setErrorData(data);
         return;
       }
+
+      if (data.accessToken) {
+        localStorage.setItem("accessToken", data.accessToken);
+      }
+
+navigate("/dashboard", { replace: true });
 
       console.log("Company created successfully!");
     } catch (error) {

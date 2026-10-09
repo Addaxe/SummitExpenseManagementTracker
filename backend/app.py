@@ -177,9 +177,5 @@ def dashboard():
 
     return jsonify(message="Dashboard access granted", userId=user.id, companySetupComplete=user.company_id is not None), 200
 
-with app.app_context():
-    db.drop_all()
-    db.create_all()
-
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
