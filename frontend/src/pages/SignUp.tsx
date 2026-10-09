@@ -91,9 +91,11 @@ const SignUp = () => {
         return;
       }
 
-      console.log("Account created successfully!");
       localStorage.setItem("accessToken", data.accessToken);
-      navigate("/company-setup")
+      // Notify the navbar that signup succeeded.
+      window.dispatchEvent(new Event("authChange"));
+      navigate("/company-setup");
+
     } catch (err) {
       console.error("Signup error:", err);
     }

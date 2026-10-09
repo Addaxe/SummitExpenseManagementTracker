@@ -47,8 +47,6 @@ const Login = () => {
           return;
         }
 
-        console.log("Unauthorized???");
-
         if (response.status === 401) {
           // Token exists but is expired/invalid
           localStorage.removeItem("accessToken");
@@ -89,7 +87,10 @@ const Login = () => {
         return;
       }
 
-      localStorage.setItem("accessToken",data.accessToken);
+      localStorage.setItem("accessToken", data.accessToken);
+
+      // Notify the navbar that the user has logged in.
+      window.dispatchEvent(new Event("authChange"));
 
       if (data.companySetupComplete) {
         navigate("/dashboard");

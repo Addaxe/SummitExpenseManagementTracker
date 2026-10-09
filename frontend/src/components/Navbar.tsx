@@ -11,11 +11,18 @@ const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
-    const checkLoginStatus = () => {
+    const updateLoginStatus = () => {
       setIsLoggedIn(Boolean(localStorage.getItem("accessToken")));
     };
 
-    checkLoginStatus();
+    window.addEventListener("authChange", updateLoginStatus);
+
+    // Check the current login status when Navbar mounts.
+    updateLoginStatus();
+
+    return () => {
+      window.removeEventListener("authChange", updateLoginStatus);
+    };
   }, []);
 
   const handleLogout = () => {
@@ -48,7 +55,7 @@ const Navbar = () => {
             return (
               <li key={option.path}>
               <NavLink className="
-                font-medium inline-flex no-underline px-0 py-3 relative text-sm text-[#26382f] transition duration-200
+                font-medium inline-flex no-underline px-0 py-2 relative text-sm text-[#26382f] transition duration-200
                 before:absolute before:bottom-0 before:border-b-2 before:border-[#26382f] before:content-[''] before:right-0 before:top-0 before:transition-[width] before:duration-200 before:ease-out before:w-0 before:-z-1
                 hover:before:left-0 hover:before:right-auto hover:before:w-full
                 " to={option.path}>{option.name}</NavLink>
@@ -58,7 +65,7 @@ const Navbar = () => {
             {isLoggedIn && (
             <li>
               <NavLink className="
-              font-medium inline-flex no-underline px-0 py-3 relative text-sm text-[#26382f] z-1 transition duration-200
+              font-medium inline-flex no-underline px-0 py-2 relative text-sm text-[#26382f] z-1 transition duration-200
               before:absolute before:bottom-0 before:border-b-2 before:border-[#26382f] before:content-[''] before:right-0 before:top-0 before:transition-[width] before:duration-200 before:ease-out before:w-0 before:-z-1
               hover:before:left-0 hover:before:right-auto hover:before:w-full
               " to="/dashboard#insights">Dashboard</NavLink>
@@ -67,7 +74,7 @@ const Navbar = () => {
             {!isLoggedIn ? (
               <div className="flex flex-row gap-3 items-center justify-center h-full">
                 <li>
-                  <NavLink className="bg-[#ffbb00] bg-linear-to-br from-[#ffbb00] via-[#ffcc33] to-[#ffbb00] font-medium inline-flex no-underline px-5 py-2.5 relative rounded-md text-sm text-[#26382f] transition-all duration-300 ease-out
+                  <NavLink className="bg-[#ffbb00] bg-linear-to-br from-[#ffbb00] via-[#ffcc33] to-[#ffbb00] font-medium inline-flex no-underline px-4 py-2 relative rounded-md text-sm text-[#26382f] transition-all duration-300 ease-out
                   hover:from-[#26382f] hover:via-[#2d4037] hover:to-[#26382f] hover:bg-[#26382f] hover:text-white"
                   to="/demo">
                     Book Demo
@@ -75,7 +82,7 @@ const Navbar = () => {
                 </li>
                 <span className="bg-gray-300 h-9 w-[1.5px]"></span>
                 <li>
-                  <NavLink className="bg-[#26382f] bg-linear-to-br from-[#26382f] via-[#2d4037] to-[#26382f] font-medium inline-flex no-underline px-5 py-2.5 relative rounded-md text-sm text-white transition-all duration-300 ease-out
+                  <NavLink className="bg-[#26382f] bg-linear-to-br from-[#26382f] via-[#2d4037] to-[#26382f] font-medium inline-flex no-underline px-4 py-2 relative rounded-md text-sm text-white transition-all duration-300 ease-out
                   hover:bg-none hover:bg-black hover:text-white"
                   to="/login">
                     Login
@@ -84,7 +91,7 @@ const Navbar = () => {
               </div>
           ) : (
             <li>
-              <NavLink className="bg-[#ffbb00] bg-linear-to-br from-[#ffbb00] via-[#ffcc33] to-[#ffbb00] font-medium inline-flex no-underline px-5 py-2.5 relative rounded-md text-sm text-[#26382f] transition-all duration-300 ease-out
+              <NavLink className="bg-[#ffbb00] bg-linear-to-br from-[#ffbb00] via-[#ffcc33] to-[#ffbb00] font-medium inline-flex no-underline px-4 py-2 relative rounded-md text-sm text-[#26382f] transition-all duration-300 ease-out
               hover:from-[#26382f] hover:via-[#2d4037] hover:to-[#26382f] hover:bg-[#26382f] hover:text-white"
                 to="/"
                 onClick={() => handleLogout()}>
