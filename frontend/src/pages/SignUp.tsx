@@ -37,15 +37,22 @@ const SignUp = () => {
           }
         );
 
-        if (response.ok) {
-          // Token is valid → user is already signed in
-          navigate("/dashboard");
-          return;
-        }
-
         if (response.status === 401) {
           // Token exists but is expired/invalid
           localStorage.removeItem("accessToken");
+        }
+
+        if (response.ok) {
+          const data = await response.json();
+
+          navigate(
+            data.companySetupComplete
+              ? "/dashboard"
+              : "/company-setup",
+            { replace: true }
+          );
+
+          return;
         }
 
         setIsCheckingAuth(false);

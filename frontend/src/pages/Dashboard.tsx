@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import InsightsSection from "../components/dashboard/InsightsSection";
 
 import ProfilePlaceholder from "../assets/dashboarddesigns/profileplaceholder.avif"
@@ -11,6 +11,7 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [activeSection, setActiveSection] = useState("Insights");
@@ -137,7 +138,12 @@ const Dashboard = () => {
       const token = localStorage.getItem("accessToken");
 
       if (!token) {
-        navigate("/login");
+        navigate("/login", {
+          replace: true,
+          state: {
+            from: `${location.pathname}${location.search}${location.hash}`,
+          },
+        });
         return;
       }
 
@@ -152,26 +158,47 @@ const Dashboard = () => {
           }
         );
 
+        const data = await response.json();
+
+        // Token is missing, invalid, or expired.
         if (response.status === 401) {
           localStorage.removeItem("accessToken");
-          navigate("/login");
+
+          navigate("/login", {
+            replace: true,
+            state: {
+              from: `${location.pathname}${location.search}${location.hash}`,
+            },
+          });
           return;
         }
 
+        // User is authenticated but hasn't completed company setup.
+        if (
+          response.status === 403 &&
+          data.companySetupComplete === false
+        ) {
+          navigate("/company-setup", { replace: true });
+          return;
+        }
+
+        // Handle other unsuccessful responses.
         if (!response.ok) {
-          console.error("Dashboard authentication failed");
+          console.error("Dashboard authentication failed:", data);
+          navigate("/login", { replace: true });
           return;
         }
 
+        // Dashboard access is allowed.
         setIsCheckingAuth(false);
-
       } catch (error) {
         console.error("Dashboard authentication error:", error);
+        navigate("/login", { replace: true });
       }
     };
 
     checkAuthentication();
-  }, [navigate]);
+  }, [navigate, location.pathname, location.search, location.hash]);
 
   // Sidebar Constants
   const [sideBarHidden, hideSideBar] = useState(false) 
@@ -208,7 +235,7 @@ const Dashboard = () => {
                   onMouseEnter={() => setIsSideBarButtonHovered(true)} 
                   onMouseLeave={() => setIsSideBarButtonHovered(false)}
                   onClick={() => setActiveSection(option.name)}
-                  className={`bg-white border border-black/0 cursor-pointer flex group items-center p-3 relative rounded-lg text-center text-white transition-all duration-300 ease-out w-full hover:bg-[#26382f] hover:text-white
+                  className={`bg-white border border-black/0 cursor-pointer flex group items-center p-3 relative rounded-lg text-center text-[#26382f] transition-all duration-300 ease-out w-full hover:bg-[#26382f] hover:text-white
                     ${sideBarHidden ? "justify-center" : ""}`}
                 >
                   <Icon fontSize="medium"/>

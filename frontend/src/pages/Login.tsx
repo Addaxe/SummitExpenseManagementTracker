@@ -47,6 +47,8 @@ const Login = () => {
           return;
         }
 
+        console.log("Unauthorized???");
+
         if (response.status === 401) {
           // Token exists but is expired/invalid
           localStorage.removeItem("accessToken");

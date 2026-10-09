@@ -169,13 +169,31 @@ def company_setup():
 @jwt_required()
 def dashboard():
     user_id = get_jwt_identity()
-
     user = db.session.get(User, user_id)
 
     if user is None:
         return jsonify(error="User account could not be found"), 404
 
-    return jsonify(message="Dashboard access granted", userId=user.id, companySetupComplete=user.company_id is not None), 200
+    if not user.is_active:
+        return jsonify(error="This account has been deactivated"), 403
+
+    if user.company_id is None:
+        return jsonify(
+            error="Company setup is required",
+            companySetupComplete=False,
+            redirectTo="/company-setup"
+        ), 403
+
+    return jsonify(
+        message="Dashboard access granted",
+        userId=str(user.id),
+        companyId=str(user.company_id),
+        companySetupComplete=True
+    ), 200
+
+
+
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
