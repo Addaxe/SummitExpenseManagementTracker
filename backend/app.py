@@ -131,7 +131,7 @@ def company_setup():
         return jsonify(field="companyWebsite", error=check_valid_company_website["message"]), check_valid_company_website["code"]
     
     user_id = get_jwt_identity()
-    user = db.session.get(User, int(user_id))
+    user = db.session.get(User, user_id)
 
     if user is None:
         return jsonify(error="User account could not be found"), 404
@@ -170,12 +170,16 @@ def company_setup():
 def dashboard():
     user_id = get_jwt_identity()
 
-    user = db.session.get(User, int(user_id))
+    user = db.session.get(User, user_id)
 
     if user is None:
         return jsonify(error="User account could not be found"), 404
 
     return jsonify(message="Dashboard access granted", userId=user.id, companySetupComplete=user.company_id is not None), 200
+
+with app.app_context():
+    db.drop_all()
+    db.create_all()
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
