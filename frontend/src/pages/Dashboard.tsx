@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import InsightsSection from "../components/dashboard/InsightsSection";
+import PeopleSection from "../components/dashboard/PeopleSection";
 
 import ProfilePlaceholder from "../assets/dashboarddesigns/profileplaceholder.avif"
 import ViewSidebarOutlinedIcon from '@mui/icons-material/ViewSidebarOutlined';
@@ -229,7 +230,7 @@ const Dashboard = () => {
   return (
     <>
       {/* <TopographicBackground  color1="rgba(116, 150, 127, 0.25)" color2="#f0f0f0"/> */}
-      <div className="bg-[#F7F8F7] bottom-0 fixed top-18.25 w-screen">
+      <div className="bg-[#F7F8F7] bottom-0 fixed top-17.5 w-screen">
         <div className="flex flex-row h-full min-h-0 p-7">
           <div className={`animate-fadeleft bg-white border border-black/10 flex flex-col h-full items-center justify-between mr-8 overflow-visible py-4 rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.04)] text-[#26382f] z-50 ${sideBarHidden ? "min-w-20 px-3.5 w-20" : "min-w-56.25 px-4 w-56.25"} transition-[min-width, width] duration-500 ease-in-out`}>
             <div className={`flex h-fit items-center justify-between py-2 w-full ${sideBarHidden ? "flex-col-reverse px-0" : "flex-row px-4"}`}>
@@ -286,7 +287,10 @@ const Dashboard = () => {
           <div className="flex-1 min-h-0 min-w-0 overflow-y-auto">
             {activeSection === "Insights" && (
               <InsightsSection/>
-            )}    
+            )}
+            {activeSection === "People" && (
+              <PeopleSection/>
+            )}
           </div>
         </div>
       </div>

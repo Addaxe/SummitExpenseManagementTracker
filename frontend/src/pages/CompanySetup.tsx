@@ -66,7 +66,7 @@ navigate("/dashboard", { replace: true });
   return (
     <>
       <TopographicBackground color1="rgba(34, 197, 94, 0.08)" color2="#26382f" />
-      <div className="bottom-0 fixed inset-x-0 overflow-auto px-5 py-10 top-18.25 w-screen sm:p-10">
+      <div className="bottom-0 fixed inset-x-0 overflow-auto px-5 py-10 top-17.5 w-screen sm:p-10">
         <div className="flex items-center justify-center min-h-full w-full">
           <form className="bg-white grid p-9 relative rounded-md *:text-[#26382f] sm:p-12.5" onSubmit={handleSubmit}>
             <h1 className="font-bold text-xl mb-1.25 sm:text-2xl">Set up your company</h1>

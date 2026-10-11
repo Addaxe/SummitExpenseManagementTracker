@@ -202,7 +202,7 @@ const InsightsSection = () => {
   };
   
   return (
-    <section id="Insights" className="flex flex-col gap-5">
+    <section id="Insights" className="flex flex-col gap-5 h-full">
       <div key="top" className="animate-fadetop flex gap-5 items-start">
         <div key="left" className="relative bg-white border border-black/10 flex-none flex items-stretch overflow-hidden rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.04)]">
         {/* before:absolute before:inset-0 before:content-[''] before:pointer-events-none before:bg-[repeating-radial-gradient(circle_at_50%_100%,transparent_0px,transparent_14px,rgba(0,0,0,0.05)_15px,rgba(0,0,0,0.05)_16px)]"> */}
@@ -321,7 +321,7 @@ const InsightsSection = () => {
                       maximumFractionDigits: 2,
                     })
                     }</span>
-                    <span className={`px-2 py-0.5 rounded-sm text-xs ${transaction.status === "Completed" ? "bg-[#e2f1ea] text-[#2f6047]" : transaction.status === "Declined" ? "bg-[#f8e6e8] text-[#b74247]": "bg-[#feedba] text-[#7d7352]"}`}>{transaction.status}</span>
+                    <span className={`font-medium px-2.5 py-1 rounded-full text-xs ${transaction.status === "Completed" ? "bg-emerald-50 text-emerald-700" : transaction.status === "Declined" ? "bg-red-50 text-red-700": "bg-amber-50 text-amber-700"}`}>{transaction.status}</span>
                   </span>
                 </span>
               );

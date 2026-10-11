@@ -60,7 +60,7 @@ const Home = () => {
         color1="rgba(116, 150, 127, 0.25)"
         color2="#f9f9f9"
       />
-      <div className="bottom-0 fixed inset-x-0 overflow-auto top-18.25 w-screen">
+      <div className="bottom-0 fixed inset-x-0 overflow-auto top-17.5 w-screen">
         <section className="flex flex-col gap-10 h-fit items-center justify-center min-h-full pb-10 pt-20 w-full sm:pb-20 sm:pt-30">
             <div className="flex flex-col gap-10 h-full items-center justify-between px-10 w-full sm:px-20 lg:gap-20 lg:flex-row">
               <div className="animate-fadetop flex flex-col gap-7 items-center w-full lg:animate-fadeleft lg:items-start">
