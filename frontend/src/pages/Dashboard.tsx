@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import InsightsSection from "../components/dashboard/InsightsSection";
-import PeopleSection from "../components/dashboard/PeopleSection";
+import PeopleSection from "../components/dashboard/PeopleSection/PeopleSection";
 
 import ProfilePlaceholder from "../assets/dashboarddesigns/profileplaceholder.avif"
 import ViewSidebarOutlinedIcon from '@mui/icons-material/ViewSidebarOutlined';
