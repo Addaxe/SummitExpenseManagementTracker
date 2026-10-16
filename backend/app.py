@@ -2,10 +2,17 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
-from datetime import timedelta
-from extensions import db
-import os
 from dotenv import load_dotenv
+from extensions import db
+
+from datetime import datetime, timedelta, timezone
+import os
+import hashlib
+import secrets
+from html import escape
+from urllib.parse import urlencode
+import resend
+
 from email_validator import validate_email, EmailNotValidError
 from models import *
 from helpers.validation_helpers import *
@@ -14,6 +21,9 @@ from helpers.card_helpers import create_employee_card
 load_dotenv()
 
 app = Flask(__name__)
+\
+resend.api_key = os.getenv("RESEND_API_KEY")
+
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
 jwt = JWTManager(app)
@@ -48,7 +58,7 @@ def login():
     password = data["password"]
 
     if not email:
-        return jsonify(field="email",error="Email cannot be empty"), 400
+        return jsonify(field="email", error="Email cannot be empty"), 400
 
     if not password:
         return jsonify(field="password", error="Password cannot be empty"), 400
@@ -56,10 +66,10 @@ def login():
     user = User.query.filter_by(email=email).first()
 
     if user is None:
-        return jsonify(error="Invalid email or password"), 401
+        return jsonify(field="email", error="No account found"), 401
 
     if not verify_password_bcrypt(user.password_hash, password):
-        return jsonify(error="Invalid email or password"), 401
+        return jsonify(field="password", error="Your password is incorrect"), 401
 
     if not user.is_active:
         return jsonify(error="This account has been deactivated"), 403
@@ -191,7 +201,155 @@ def dashboard():
         companySetupComplete=True
     ), 200
 
+@app.route("/api/employees/invite", methods=["POST"])
+@jwt_required()
+def invite_employee():
+    data = request.get_json(silent=True) or {}
 
+    inviter_id = get_jwt_identity()
+    inviter = db.session.get(User, inviter_id)
+
+    if inviter is None or not inviter.is_active:
+        return jsonify(error="Account not found or inactive"), 403
+
+    if inviter.company_id is None:
+        return jsonify(error="Complete company setup first"), 403
+
+    # Replace/extend this check with your actual permission system.
+    if inviter.role not in ("Owner", "Admin"):
+        return jsonify(error="You cannot invite employees"), 403
+
+    email = data.get("email", "").strip().lower()
+    full_name = data.get("name", "").strip()
+    role = data.get("role", "Employee")
+    department = data.get("department", "").strip() or None
+
+    if not full_name or not email:
+        return jsonify(error="Name and email are required"), 400
+
+    try:
+        validate_email(email)
+    except EmailNotValidError:
+        return jsonify(error="Invalid email address"), 400
+
+    if role not in (
+        "Employee",
+        "Manager",
+        "Admin",
+        "Product Designer",
+        "Financial Analyst",
+        "Frontend Engineer",
+        "HR Manager",
+        "Data Scientist",
+    ):
+        return jsonify(error="Invalid role"), 400
+
+    parts = full_name.split(maxsplit=1)
+    first_name = parts[0]
+    last_name = parts[1] if len(parts) > 1 else ""
+
+    existing_user = User.query.filter_by(email=email).first()
+
+    if existing_user:
+        return jsonify(error="An account with this email already exists"), 409
+
+    # Prevent duplicate pending invitations for the same company/email.
+    existing_invite = EmployeeInvitation.query.filter_by(
+        company_id=inviter.company_id,
+        email=email,
+        accepted_at=None,
+        revoked_at=None,
+    ).first()
+
+    if existing_invite and existing_invite.expires_at and existing_invite.expires_at > datetime.now(timezone.utc):
+        return jsonify(error="An active invitation already exists"), 409
+
+    raw_token = secrets.token_urlsafe(32)
+    token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
+
+    raw_limit = data.get("cardLimit")
+    card_limit = None
+
+    if raw_limit is not None:
+        try:
+            from decimal import Decimal, InvalidOperation
+
+            card_limit = Decimal(str(raw_limit))
+        except (InvalidOperation, ValueError):
+            return jsonify(error="Invalid card limit"), 400
+
+        if not card_limit.is_finite() or card_limit <= 0:
+            return jsonify(error="Card limit must be positive"), 400
+
+    frequency = data.get("cardLimitFrequency", "monthly")
+
+    if frequency not in ("daily", "weekly", "monthly", "yearly"):
+        return jsonify(error="Invalid reset frequency"), 400
+
+    invitation = EmployeeInvitation(
+        company_id=inviter.company_id,
+        invited_by_id=inviter.id,
+        email=email,
+        first_name=first_name,
+        last_name=last_name,
+        role=role,
+        department=department,
+        card_limit=card_limit,
+        card_limit_frequency=frequency,
+        token_hash=token_hash,
+        expires_at=datetime.now(timezone.utc) + timedelta(minutes=3)
+    )
+
+    try:
+        db.session.add(invitation)
+        db.session.flush()
+
+        invite_url = (
+            f"{os.environ['FRONTEND_URL'].rstrip('/')}"
+            f"/accept-invitation?{urlencode({'token': raw_token})}"
+        )
+
+        invitation_html = f"""
+            <html>
+            <body>
+                <h2>You're invited to Summit!</h2>
+                <p>Hi {escape(first_name)},</p>
+                <p>
+                {escape(inviter.first_name)} invited you to join Summit
+                Expense Management.
+                </p>
+                <p>Accept your invitation and set up your account:</p>
+                <p>
+                <a href="{escape(invite_url, quote=True)}">
+                    Accept invitation
+                </a>
+                </p>
+                <p>
+                If you weren't expecting this invitation, you can ignore
+                this email.
+                </p>
+            </body>
+            </html>
+            """
+
+        resend.Emails.send({
+            "from": "Summit <onboarding@resend.dev>",
+            "to": [email],
+            "subject": "You're invited to Summit",
+            "html": invitation_html,
+        })
+
+        db.session.commit()
+
+    except Exception:
+        db.session.rollback()
+        app.logger.exception("Failed to create or send employee invitation")
+        return jsonify(error="Unable to send invitation right now"), 500
+
+    return jsonify(
+        message="Invitation sent successfully",
+        invitationId=str(invitation.id),
+    ), 201
 
 
 
