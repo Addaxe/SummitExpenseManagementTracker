@@ -25,7 +25,7 @@ app = Flask(__name__)
 resend.api_key = os.getenv("RESEND_API_KEY")
 
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(minutes=3)
 jwt = JWTManager(app)
 
 # Configure the PostgreSQL connection
@@ -312,7 +312,7 @@ def invite_employee():
         invitation_html = f"""
             <html>
             <body>
-                <h2>You're invited to Summit!</h2>
+                <h2 >You're invited to Summit!</h2>
                 <p>Hi {escape(first_name)},</p>
                 <p>
                 {escape(inviter.first_name)} invited you to join Summit
