@@ -5,7 +5,7 @@ import WarningIcon from '@mui/icons-material/Warning';
 
 const Login = () => {
   const navigate = useNavigate()
-   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -50,6 +50,7 @@ const Login = () => {
         if (response.status === 401) {
           // Token exists but is expired/invalid
           localStorage.removeItem("accessToken");
+          window.dispatchEvent(new Event("authChange"));
         }
 
         setIsCheckingAuth(false);
@@ -119,9 +120,8 @@ const Login = () => {
               to manage expenses and track spending
             </p>
             {errorData.field && (
-              <div className="bg-red-200 border-[1.5px] border-red-600 mb-6 px-5 py-2 rounded-md text-red-800 text-sm sm:text-base">{errorData.error}</div>
+              <div className="bg-[#fedada] mb-6 px-5 py-2 rounded-md text-red-800! text-sm sm:text-base">{errorData.error}</div>
             )}
-
             {/* Email */}
             <div className="relative mb-6">
               <label className={`absolute bg-white left-4 px-1 text-xs -top-2 sm:text-sm" htmlFor="email"

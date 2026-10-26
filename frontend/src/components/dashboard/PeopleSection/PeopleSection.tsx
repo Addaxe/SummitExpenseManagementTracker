@@ -1,6 +1,12 @@
+
 import { useEffect, useState } from "react";
-import InviteEmployeeModal, { type NewEmployee } from "./InviteEmployeeModal";
-import EditEmployeeModal, { type EditableEmployee } from "./EditEmployeeModal";
+import InviteEmployeeModal, {
+  type NewEmployee,
+  type EmployeeSpendingLimit,
+} from "./InviteEmployeeModal";
+import EditEmployeeModal, {
+  type EditableEmployee,
+} from "./EditEmployeeModal";
 import {
   useTable,
   createColumnHelper,
@@ -14,11 +20,9 @@ interface Employee {
   email: string;
   role: string;
   department: string;
-  cardLimit: number | null;
-  cardLimitFrequency?: "daily" | "weekly" | "monthly" | "yearly";
+  spendingLimits: EmployeeSpendingLimit[];
   status: "Active" | "Pending";
 }
-
 
 const features = stockFeatures;
 const columnHelper = createColumnHelper<typeof features, Employee>();
@@ -28,15 +32,23 @@ const columns = columnHelper.columns([
     header: "Employee",
     cell: (info) => (
       <div className="flex flex-col gap-1">
-        <span className="font-medium text-slate-900">{info.getValue()}</span>
-        <span className="text-xs text-slate-500">{info.row.original.email}</span>
+        <span className="font-medium text-slate-900">
+          {info.getValue()}
+        </span>
+        <span className="text-xs text-slate-500">
+          {info.row.original.email}
+        </span>
       </div>
     ),
   }),
+
   columnHelper.accessor("role", {
     header: "Role",
-    cell: (info) => <span className="text-slate-600">{info.getValue()}</span>,
+    cell: (info) => (
+      <span className="text-slate-600">{info.getValue()}</span>
+    ),
   }),
+
   columnHelper.accessor("department", {
     header: "Department",
     cell: (info) => (
@@ -45,32 +57,64 @@ const columns = columnHelper.columns([
       </span>
     ),
   }),
-  columnHelper.accessor("cardLimit", {
-    header: "Monthly card limit",
+
+  columnHelper.accessor("spendingLimits", {
+    header: "Spending limits",
     cell: (info) => {
-      const limit = info.getValue();
-      return limit === null ? (
-        <span className="text-slate-400">Not assigned</span>
-      ) : (
-        <span className="font-medium tabular-nums text-slate-800">
-          {limit.toLocaleString("en-US", {
-            style: "currency",
-            currency: "USD",
-            maximumFractionDigits: 2,
-          })}
-          <span className="ml-1 text-xs font-normal text-slate-500">/ month</span>
-        </span>
+      const limits = info.getValue();
+
+      if (limits.length === 0) {
+        return (
+          <span className="text-slate-400">
+            No limits
+          </span>
+        );
+      }
+
+      return (
+        <div className="flex min-w-36 flex-col gap-1.5">
+          {limits.slice(0, 2).map((limit) => (
+            <div
+              key={limit.category}
+              className="flex items-center justify-between gap-3"
+            >
+              <span className="text-xs text-slate-600">
+                {limit.category}
+              </span>
+              <span className="text-xs font-medium tabular-nums text-slate-800">
+                {limit.amount.toLocaleString("en-US", {
+                  style: "currency",
+                  currency: "USD",
+                  maximumFractionDigits: 2,
+                })}
+                <span className="ml-1 font-normal text-slate-400">
+                  / {limit.frequency === "yearly" ? "yr" : limit.frequency === "monthly" ? "mo" : limit.frequency === "weekly" ? "wk" : "day"}
+                </span>
+              </span>
+            </div>
+          ))}
+
+          {limits.length > 2 && (
+            <span className="text-xs text-slate-400">
+              +{limits.length - 2} more {limits.length - 2 === 1 ? "category" : "categories"}
+            </span>
+          )}
+        </div>
       );
     },
   }),
+
   columnHelper.accessor("status", {
     header: "Status",
     cell: (info) => {
       const isActive = info.getValue() === "Active";
+
       return (
         <span
           className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
-            isActive ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
+            isActive
+              ? "bg-emerald-50 text-emerald-700"
+              : "bg-amber-50 text-amber-700"
           }`}
         >
           <span
@@ -92,7 +136,11 @@ const initialEmployees: Employee[] = [
     email: "jane@company.com",
     role: "Admin",
     department: "Operations",
-    cardLimit: 3000,
+    spendingLimits: [
+      { category: "Meals", amount: 300, frequency: "monthly" },
+      { category: "Travel", amount: 1500, frequency: "monthly" },
+      { category: "Software", amount: 1200, frequency: "monthly" },
+    ],
     status: "Active",
   },
   {
@@ -101,7 +149,10 @@ const initialEmployees: Employee[] = [
     email: "alex@company.com",
     role: "Product Designer",
     department: "Design",
-    cardLimit: 1000,
+    spendingLimits: [
+      { category: "Software", amount: 600, frequency: "monthly" },
+      { category: "Equipment", amount: 1000, frequency: "yearly" },
+    ],
     status: "Active",
   },
   {
@@ -110,7 +161,10 @@ const initialEmployees: Employee[] = [
     email: "carlos@company.com",
     role: "Financial Analyst",
     department: "Finance",
-    cardLimit: 1500,
+    spendingLimits: [
+      { category: "Meals", amount: 300, frequency: "monthly" },
+      { category: "Travel", amount: 1200, frequency: "monthly" },
+    ],
     status: "Active",
   },
   {
@@ -119,7 +173,10 @@ const initialEmployees: Employee[] = [
     email: "sarah@company.com",
     role: "Frontend Engineer",
     department: "Engineering",
-    cardLimit: 1000,
+    spendingLimits: [
+      { category: "Software", amount: 500, frequency: "monthly" },
+      { category: "Equipment", amount: 1000, frequency: "yearly" },
+    ],
     status: "Active",
   },
   {
@@ -128,7 +185,10 @@ const initialEmployees: Employee[] = [
     email: "michael@company.com",
     role: "HR Manager",
     department: "Human Resources",
-    cardLimit: 2500,
+    spendingLimits: [
+      { category: "Meals", amount: 250, frequency: "monthly" },
+      { category: "Office Supplies", amount: 500, frequency: "monthly" },
+    ],
     status: "Pending",
   },
   {
@@ -137,7 +197,7 @@ const initialEmployees: Employee[] = [
     email: "emily@company.com",
     role: "Data Scientist",
     department: "Data",
-    cardLimit: null,
+    spendingLimits: [],
     status: "Pending",
   },
 ];
@@ -170,7 +230,9 @@ const PeopleSection = () => {
   const [employees, setEmployees] = useState<Employee[]>(initialEmployees);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
-  const [pageSize, setPageSize] = useState(window.innerWidth < 640 ? 5 : 10);
+  const [pageSize, setPageSize] = useState(
+    () => window.innerWidth < 640 ? 5 : 10
+  );
 
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState("All");
@@ -179,30 +241,45 @@ const PeopleSection = () => {
   const [cardLimitFilter, setCardLimitFilter] = useState("All");
 
   const [isInviteOpen, setIsInviteOpen] = useState(false);
-  const [editingEmployeeId, setEditingEmployeeId] = useState<string | null>(null);
+  const [editingEmployeeId, setEditingEmployeeId] = useState<string | null>(
+    null
+  );
 
   const editingEmployee =
     employees.find((employee) => employee.id === editingEmployeeId) ?? null;
 
   useEffect(() => {
-    const updatePageSize = () => setPageSize(window.innerWidth < 640 ? 5 : 10);
+    const updatePageSize = () => {
+      setPageSize(window.innerWidth < 640 ? 5 : 10);
+    };
+
     window.addEventListener("resize", updatePageSize);
     return () => window.removeEventListener("resize", updatePageSize);
   }, []);
 
   const filteredEmployees = employees.filter((employee) => {
     const query = searchQuery.trim().toLowerCase();
+
     const matchesSearch =
       employee.name.toLowerCase().includes(query) ||
       employee.email.toLowerCase().includes(query);
-    const matchesRole = roleFilter === "All" || employee.role === roleFilter;
-    const matchesStatus = statusFilter === "All" || employee.status === statusFilter;
+
+    const matchesRole =
+      roleFilter === "All" || employee.role === roleFilter;
+
+    const matchesStatus =
+      statusFilter === "All" || employee.status === statusFilter;
+
     const matchesDepartment =
-      departmentFilter === "All" || employee.department === departmentFilter;
+      departmentFilter === "All" ||
+      employee.department === departmentFilter;
+
+    const hasSpendingLimits = employee.spendingLimits.length > 0;
+
     const matchesCardLimit =
       cardLimitFilter === "All" ||
-      (cardLimitFilter === "Assigned" && employee.cardLimit !== null) ||
-      (cardLimitFilter === "None" && employee.cardLimit === null);
+      (cardLimitFilter === "Assigned" && hasSpendingLimits) ||
+      (cardLimitFilter === "None" && !hasSpendingLimits);
 
     return (
       matchesSearch &&
@@ -213,18 +290,26 @@ const PeopleSection = () => {
     );
   });
 
-  const totalPages = Math.max(1, Math.ceil(filteredEmployees.length / pageSize));
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredEmployees.length / pageSize)
+  );
 
   useEffect(() => {
-    setCurrentPage((previousPage) => Math.min(previousPage, totalPages));
+    setCurrentPage((previousPage) =>
+      Math.min(previousPage, totalPages)
+    );
   }, [totalPages]);
 
   useEffect(() => {
     let isMounted = true;
+
     setIsLoading(true);
+
     const timeoutId = setTimeout(() => {
       if (isMounted) setIsLoading(false);
     }, 300);
+
     return () => {
       isMounted = false;
       clearTimeout(timeoutId);
@@ -254,45 +339,79 @@ const PeopleSection = () => {
               email: updatedEmployee.email,
               role: updatedEmployee.role,
               department: updatedEmployee.department,
-              cardLimit: updatedEmployee.cardLimit,
-              cardLimitFrequency: updatedEmployee.cardLimitFrequency ?? "monthly",
+              spendingLimits: updatedEmployee.spendingLimits,
             }
           : employee
       )
     );
+
     setEditingEmployeeId(null);
   };
 
-  const handleInviteEmployee = (newEmployee: NewEmployee) => {
+  const handleInviteEmployee = async (
+    newEmployee: NewEmployee
+  ): Promise<void> => {
+    const token = localStorage.getItem("accessToken");
+
+    if (!token) {
+      throw new Error("Please sign in again.");
+    }
+
     const normalizedEmail = newEmployee.email.trim().toLowerCase();
+
     const emailExists = employees.some(
       (employee) => employee.email.toLowerCase() === normalizedEmail
     );
 
     if (emailExists) {
-      window.alert("This email is already on your employee list.");
-      return;
+      throw new Error("This email is already on your employee list.");
     }
 
-    const employee: Employee = {
-      id: crypto.randomUUID(),
-      name: newEmployee.name.trim(),
-      email: normalizedEmail,
-      role: newEmployee.role,
-      department: newEmployee.department,
-      cardLimit: newEmployee.cardLimit,
-      cardLimitFrequency: newEmployee.cardLimitFrequency,
-      status: "Pending",
-    };
+    const response = await fetch("/api/employees/invite", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        ...newEmployee,
+        email: normalizedEmail,
+      }),
+    });
 
-    const updatedCount = employees.length + 1;
-    setEmployees((previousEmployees) => [...previousEmployees, employee]);
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error ?? "Unable to send invitation.");
+    }
+
+    const savedEmployee: Employee = result.employee
+      ? {
+          ...result.employee,
+          spendingLimits: result.employee.spendingLimits ?? newEmployee.spendingLimits,
+          status: result.employee.status ?? "Pending",
+        }
+      : {
+          id: crypto.randomUUID(),
+          name: newEmployee.name.trim(),
+          email: normalizedEmail,
+          role: newEmployee.role,
+          department: newEmployee.department,
+          spendingLimits: newEmployee.spendingLimits,
+          status: "Pending",
+        };
+
+    setEmployees((previousEmployees) => [
+      ...previousEmployees,
+      savedEmployee,
+    ]);
+
     clearFilters();
-    setCurrentPage(Math.ceil(updatedCount / pageSize));
-    setIsInviteOpen(false);
+    setCurrentPage(Math.ceil((employees.length + 1) / pageSize));
   };
 
   const startPageIndex = (currentPage - 1) * pageSize;
+
   const currentPageEmployees = filteredEmployees.slice(
     startPageIndex,
     startPageIndex + pageSize
@@ -310,11 +429,14 @@ const PeopleSection = () => {
       <div className="flex h-full flex-col justify-between overflow-hidden rounded-lg border border-black/10 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.04)]">
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 px-6 py-4">
           <div>
-            <h2 className="text-base font-semibold text-slate-900">People</h2>
+            <h2 className="text-base font-semibold text-slate-900">
+              People
+            </h2>
             <p className="mt-1 text-sm text-slate-500">
-              Manage employees, invitations, departments, and card limits.
+              Manage employees, invitations, departments, and card spending limits.
             </p>
           </div>
+
           <button
             type="button"
             onClick={() => setIsInviteOpen(true)}
@@ -328,7 +450,9 @@ const PeopleSection = () => {
         {/* Search and filters */}
         <div className="flex flex-col gap-4 border-b border-slate-100 px-4 py-4 sm:px-6">
           <div className="relative w-full sm:max-w-sm">
-            <label htmlFor="employee-search" className="sr-only">Search employees</label>
+            <label htmlFor="employee-search" className="sr-only">
+              Search employees
+            </label>
             <input
               id="employee-search"
               type="search"
@@ -344,7 +468,9 @@ const PeopleSection = () => {
 
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="role-filter" className="text-xs font-medium text-slate-500">Role</label>
+              <label htmlFor="role-filter" className="text-xs font-medium text-slate-500">
+                Role
+              </label>
               <select
                 id="role-filter"
                 value={roleFilter}
@@ -355,12 +481,18 @@ const PeopleSection = () => {
                 className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-[#26382f] focus:ring-2 focus:ring-[#26382f]/10 sm:w-auto"
               >
                 <option value="All">All roles</option>
-                {roles.map((role) => <option key={role} value={role}>{role}</option>)}
+                {roles.map((role) => (
+                  <option key={role} value={role}>
+                    {role}
+                  </option>
+                ))}
               </select>
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="department-filter" className="text-xs font-medium text-slate-500">Department</label>
+              <label htmlFor="department-filter" className="text-xs font-medium text-slate-500">
+                Department
+              </label>
               <select
                 id="department-filter"
                 value={departmentFilter}
@@ -372,13 +504,17 @@ const PeopleSection = () => {
               >
                 <option value="All">All departments</option>
                 {departments.map((department) => (
-                  <option key={department} value={department}>{department}</option>
+                  <option key={department} value={department}>
+                    {department}
+                  </option>
                 ))}
               </select>
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="status-filter" className="text-xs font-medium text-slate-500">Status</label>
+              <label htmlFor="status-filter" className="text-xs font-medium text-slate-500">
+                Status
+              </label>
               <select
                 id="status-filter"
                 value={statusFilter}
@@ -395,7 +531,9 @@ const PeopleSection = () => {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="card-limit-filter" className="text-xs font-medium text-slate-500">Card limit</label>
+              <label htmlFor="card-limit-filter" className="text-xs font-medium text-slate-500">
+                Spending limits
+              </label>
               <select
                 id="card-limit-filter"
                 value={cardLimitFilter}
@@ -405,9 +543,9 @@ const PeopleSection = () => {
                 }}
                 className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-[#26382f] focus:ring-2 focus:ring-[#26382f]/10 sm:w-auto"
               >
-                <option value="All">All card limits</option>
-                <option value="Assigned">Card assigned</option>
-                <option value="None">No card assigned</option>
+                <option value="All">All spending limits</option>
+                <option value="Assigned">Limits assigned</option>
+                <option value="None">No spending limits</option>
               </select>
             </div>
 
@@ -421,8 +559,15 @@ const PeopleSection = () => {
           </div>
 
           <p aria-live="polite" className="text-xs text-slate-500">
-            Showing <span className="font-medium text-slate-700">{filteredEmployees.length}</span>
-            {" "}of <span className="font-medium text-slate-700">{employees.length}</span> employees
+            Showing{" "}
+            <span className="font-medium text-slate-700">
+              {filteredEmployees.length}
+            </span>{" "}
+            of{" "}
+            <span className="font-medium text-slate-700">
+              {employees.length}
+            </span>{" "}
+            employees
           </p>
         </div>
 
@@ -439,32 +584,51 @@ const PeopleSection = () => {
                   <tr key={headerGroup.id}>
                     {headerGroup.headers.map((header) => (
                       <th key={header.id} className="px-6 py-3">
-                        {header.isPlaceholder ? null : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
                       </th>
                     ))}
                     <th className="px-6 py-3">Actions</th>
                   </tr>
                 ))}
               </thead>
+
               <tbody className="divide-y divide-slate-100 bg-white">
                 {table.getRowModel().rows.length === 0 ? (
                   <tr>
-                    <td colSpan={columns.length + 1} className="px-6 py-12 text-center text-sm text-slate-500">
+                    <td
+                      colSpan={columns.length + 1}
+                      className="px-6 py-12 text-center text-sm text-slate-500"
+                    >
                       No employees match your filters.
-                      <button type="button" onClick={clearFilters} className="ml-1 font-medium text-[#26382f] underline underline-offset-2 hover:text-[#344a3e]">
+                      <button
+                        type="button"
+                        onClick={clearFilters}
+                        className="ml-1 font-medium text-[#26382f] underline underline-offset-2 hover:text-[#344a3e]"
+                      >
                         Clear filters
                       </button>
                     </td>
                   </tr>
                 ) : (
                   table.getRowModel().rows.map((row) => (
-                    <tr key={row.id} className="transition-colors hover:bg-slate-50/50">
+                    <tr
+                      key={row.id}
+                      className="transition-colors hover:bg-slate-50/50"
+                    >
                       {row.getVisibleCells().map((cell) => (
-                        <td key={cell.id} className="whitespace-nowrap px-6 py-4 text-slate-700">
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        <td
+                          key={cell.id}
+                          className="whitespace-nowrap px-6 py-4 text-slate-700"
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
                         </td>
                       ))}
                       <td className="whitespace-nowrap px-6 py-4">
@@ -488,21 +652,37 @@ const PeopleSection = () => {
         {/* Pagination */}
         <div className="flex flex-col gap-3 border-t border-slate-100 bg-white px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <div className="text-xs text-slate-500">
-            Page <span className="font-semibold text-slate-800">{currentPage}</span>
-            {" "}of <span className="font-semibold text-slate-800">{totalPages}</span>
+            Page{" "}
+            <span className="font-semibold text-slate-800">
+              {currentPage}
+            </span>{" "}
+            of{" "}
+            <span className="font-semibold text-slate-800">
+              {totalPages}
+            </span>
           </div>
+
           <div className="flex gap-2">
             <button
               type="button"
-              onClick={() => setCurrentPage((previousPage) => Math.max(previousPage - 1, 1))}
+              onClick={() =>
+                setCurrentPage((previousPage) =>
+                  Math.max(previousPage - 1, 1)
+                )
+              }
               disabled={currentPage === 1 || isLoading}
               className="inline-flex cursor-pointer items-center justify-center rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-500/20 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white"
             >
               Previous
             </button>
+
             <button
               type="button"
-              onClick={() => setCurrentPage((previousPage) => Math.min(previousPage + 1, totalPages))}
+              onClick={() =>
+                setCurrentPage((previousPage) =>
+                  Math.min(previousPage + 1, totalPages)
+                )
+              }
               disabled={currentPage === totalPages || isLoading}
               className="inline-flex cursor-pointer items-center justify-center rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-500/20 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white"
             >

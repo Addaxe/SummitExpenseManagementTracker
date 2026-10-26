@@ -1,4 +1,11 @@
+
 import { useEffect, useState, type FormEvent } from "react";
+
+export interface EmployeeSpendingLimit {
+  category: string;
+  amount: number;
+  frequency: "daily" | "weekly" | "monthly" | "yearly";
+}
 
 export interface EditableEmployee {
   id: string;
@@ -6,8 +13,7 @@ export interface EditableEmployee {
   email: string;
   role: string;
   department: string;
-  cardLimit: number | null;
-  cardLimitFrequency?: "daily" | "weekly" | "monthly" | "yearly";
+  spendingLimits: EmployeeSpendingLimit[];
   status: string;
 }
 
@@ -16,6 +22,13 @@ interface EditEmployeeModalProps {
   employee: EditableEmployee | null;
   onClose: () => void;
   onSave: (employee: EditableEmployee) => void;
+}
+
+interface SpendingLimitForm {
+  id: string;
+  category: string;
+  amount: string;
+  frequency: "daily" | "weekly" | "monthly" | "yearly";
 }
 
 const roles = [
@@ -42,6 +55,33 @@ const departments = [
   "Other",
 ];
 
+const categories = [
+  "Meals",
+  "Travel",
+  "Software",
+  "Office Supplies",
+  "Transportation",
+  "Entertainment",
+  "Equipment",
+  "Other",
+];
+
+const inputClassName =
+  "w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition focus:border-[#26382f] focus:ring-2 focus:ring-[#26382f]/15 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400";
+
+const labelClassName =
+  "mb-1.5 block text-sm font-medium text-gray-700";
+
+const createLimitForm = (
+  limits: EmployeeSpendingLimit[] = []
+): SpendingLimitForm[] =>
+  limits.map((limit) => ({
+    id: crypto.randomUUID(),
+    category: limit.category,
+    amount: String(limit.amount),
+    frequency: limit.frequency,
+  }));
+
 const EditEmployeeModal = ({
   isOpen,
   employee,
@@ -52,23 +92,22 @@ const EditEmployeeModal = ({
   const [editEmail, setEditEmail] = useState("");
   const [editRole, setEditRole] = useState("Employee");
   const [editDepartment, setEditDepartment] = useState("");
-  const [editCustomLimit, setEditCustomLimit] = useState("");
-  const [editLimitFrequency, setEditLimitFrequency] = useState<"daily" | "weekly" | "monthly" | "yearly">("monthly");
+  const [spendingLimits, setSpendingLimits] =
+    useState<SpendingLimitForm[]>([]);
   const [hasNoLimit, setHasNoLimit] = useState(false);
   const [editError, setEditError] = useState("");
 
   useEffect(() => {
-    if (!employee) return;
+    if (!employee || !isOpen) return;
 
     setEditName(employee.name);
     setEditEmail(employee.email);
     setEditRole(employee.role);
     setEditDepartment(employee.department);
-    setHasNoLimit(employee.cardLimit === null);
-    setEditCustomLimit(employee.cardLimit === null ? "" : String(employee.cardLimit));
-    setEditLimitFrequency(employee.cardLimitFrequency ?? "monthly");
+    setSpendingLimits(createLimitForm(employee.spendingLimits));
+    setHasNoLimit(employee.spendingLimits.length === 0);
     setEditError("");
-  }, [employee]);
+  }, [employee, isOpen]);
 
   if (!isOpen || !employee) return null;
 
@@ -77,7 +116,43 @@ const EditEmployeeModal = ({
     onClose();
   };
 
-  const handleSaveEmployee = (event: FormEvent<HTMLFormElement>) => {
+  const addSpendingLimit = () => {
+    setSpendingLimits((current) => [
+      ...current,
+      {
+        id: crypto.randomUUID(),
+        category: "",
+        amount: "",
+        frequency: "monthly",
+      },
+    ]);
+    setHasNoLimit(false);
+    setEditError("");
+  };
+
+  const removeSpendingLimit = (id: string) => {
+    setSpendingLimits((current) =>
+      current.filter((limit) => limit.id !== id)
+    );
+    setEditError("");
+  };
+
+  const updateSpendingLimit = (
+    id: string,
+    field: "category" | "amount" | "frequency",
+    value: string
+  ) => {
+    setSpendingLimits((current) =>
+      current.map((limit) =>
+        limit.id === id ? { ...limit, [field]: value } : limit
+      )
+    );
+    setEditError("");
+  };
+
+  const handleSaveEmployee = (
+    event: FormEvent<HTMLFormElement>
+  ) => {
     event.preventDefault();
     setEditError("");
 
@@ -94,16 +169,59 @@ const EditEmployeeModal = ({
       return;
     }
 
-    let cardLimit: number | null;
-    if (hasNoLimit) {
-      cardLimit = null;
-    } else {
-      const parsedLimit = Number(editCustomLimit);
-      if (!editCustomLimit.trim() || !Number.isFinite(parsedLimit) || parsedLimit <= 0) {
-        setEditError("Enter a spending limit greater than $0.");
+    let parsedLimits: EmployeeSpendingLimit[] = [];
+
+    if (!hasNoLimit) {
+      if (spendingLimits.length === 0) {
+        setEditError(
+          "Add at least one spending category or select no spending limit."
+        );
         return;
       }
-      cardLimit = parsedLimit;
+
+      if (spendingLimits.some((limit) => !limit.category)) {
+        setEditError(
+          "Select a category for each spending limit."
+        );
+        return;
+      }
+
+      const selectedCategories = spendingLimits.map((limit) =>
+        limit.category.trim().toLowerCase()
+      );
+
+      if (
+        new Set(selectedCategories).size !==
+        selectedCategories.length
+      ) {
+        setEditError(
+          "Each spending category can only be added once."
+        );
+        return;
+      }
+
+      const hasInvalidAmount = spendingLimits.some((limit) => {
+        const amount = Number(limit.amount);
+
+        return (
+          !limit.amount.trim() ||
+          !Number.isFinite(amount) ||
+          amount <= 0
+        );
+      });
+
+      if (hasInvalidAmount) {
+        setEditError(
+          "Each spending limit must be greater than zero."
+        );
+        return;
+      }
+
+      parsedLimits = spendingLimits.map((limit) => ({
+        category: limit.category,
+        amount: Number(limit.amount),
+        frequency: limit.frequency,
+      }));
     }
 
     onSave({
@@ -112,42 +230,56 @@ const EditEmployeeModal = ({
       email,
       role: editRole,
       department: editDepartment,
-      cardLimit,
-      cardLimitFrequency: editLimitFrequency,
+      spendingLimits: parsedLimits,
     });
+
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/40 p-4 top-17.5">
-      <div
+    <div
+      className="fixed inset-0 top-17.5 z-50 flex items-center justify-center overflow-y-auto bg-black/40 p-4"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) {
+          handleClose();
+        }
+      }}
+    >
+      <section
         role="dialog"
         aria-modal="true"
         aria-labelledby="edit-employee-title"
-        className="my-auto w-full max-w-lg rounded-xl border border-black/10 bg-white p-6 shadow-xl"
+        className="my-auto max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white shadow-xl"
       >
-        <div className="mb-6 flex items-start justify-between gap-4">
+        <div className="flex items-start justify-between border-b border-gray-200 px-6 py-5">
           <div>
-            <h2 id="edit-employee-title" className="text-lg font-semibold text-slate-900">
+            <h2
+              id="edit-employee-title"
+              className="text-xl font-semibold text-[#26382f]"
+            >
               Edit employee
             </h2>
-            <p className="mt-1 text-sm text-slate-500">
-              Update employee details and monthly card limit.
+            <p className="mt-1 text-sm text-gray-500">
+              Update employee details and card spending limits.
             </p>
           </div>
+
           <button
             type="button"
-            aria-label="Close edit employee form"
+            aria-label="Close edit employee modal"
             onClick={handleClose}
-            className="cursor-pointer rounded-md px-2 py-1 text-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+            className="rounded-lg px-2 py-1 text-xl text-gray-500 transition hover:bg-gray-100 hover:text-gray-900"
           >
-            &times;
+            ×
           </button>
         </div>
 
-        <form onSubmit={handleSaveEmployee} className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="edit-name" className="text-sm font-medium text-slate-700">
+        <form
+          onSubmit={handleSaveEmployee}
+          className="space-y-5 px-6 py-5"
+        >
+          <div>
+            <label htmlFor="edit-name" className={labelClassName}>
               Full name
             </label>
             <input
@@ -160,12 +292,12 @@ const EditEmployeeModal = ({
                 setEditName(event.target.value);
                 setEditError("");
               }}
-              className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-[#26382f] focus:ring-2 focus:ring-[#26382f]/10"
+              className={inputClassName}
             />
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="edit-email" className="text-sm font-medium text-slate-700">
+          <div>
+            <label htmlFor="edit-email" className={labelClassName}>
               Work email
             </label>
             <input
@@ -178,100 +310,67 @@ const EditEmployeeModal = ({
                 setEditEmail(event.target.value);
                 setEditError("");
               }}
-              className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-[#26382f] focus:ring-2 focus:ring-[#26382f]/10"
+              className={inputClassName}
             />
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="edit-role" className="text-sm font-medium text-slate-700">
+            <div>
+              <label htmlFor="edit-role" className={labelClassName}>
                 Role
               </label>
               <select
                 id="edit-role"
                 value={editRole}
                 onChange={(event) => setEditRole(event.target.value)}
-                className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-[#26382f] focus:ring-2 focus:ring-[#26382f]/10"
+                className={inputClassName}
               >
-                {roles.map((role) => (
-                  <option key={role} value={role}>
-                    {role}
+                {roles.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
                   </option>
                 ))}
               </select>
             </div>
 
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="edit-department" className="text-sm font-medium text-slate-700">
+            <div>
+              <label
+                htmlFor="edit-department"
+                className={labelClassName}
+              >
                 Department
               </label>
               <select
                 id="edit-department"
                 value={editDepartment}
-                onChange={(event) => setEditDepartment(event.target.value)}
-                className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-[#26382f] focus:ring-2 focus:ring-[#26382f]/10"
+                onChange={(event) =>
+                  setEditDepartment(event.target.value)
+                }
+                className={inputClassName}
               >
                 <option value="">Not assigned</option>
-                {departments.map((department) => (
-                  <option key={department} value={department}>
-                    {department}
+                {departments.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
                   </option>
                 ))}
               </select>
             </div>
           </div>
 
-          <div className="flex flex-col gap-4 border-t border-slate-100 pt-4">
+          <fieldset className="space-y-4 border-t border-gray-200 pt-4">
             <div>
-              <p className="text-sm font-medium text-slate-700">Spending limit</p>
-              <p className="mt-1 text-xs leading-5 text-slate-500">
-                Set a spending amount and choose how often the limit resets.
+              <legend className="text-sm font-medium text-gray-800">
+                Card spending categories
+              </legend>
+              <p className="mt-1 text-xs leading-5 text-gray-500">
+                Manage the spending limits assigned to this
+                employee's card. Each category has its own amount
+                and reset frequency.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="edit-custom-limit" className="text-sm font-medium text-slate-700">
-                  Limit amount ($)
-                </label>
-                <input
-                  id="edit-custom-limit"
-                  type="number"
-                  min="0.01"
-                  step="0.01"
-                  inputMode="decimal"
-                  disabled={hasNoLimit}
-                  required={!hasNoLimit}
-                  value={editCustomLimit}
-                  onChange={(event) => {
-                    setEditCustomLimit(event.target.value);
-                    setEditError("");
-                  }}
-                  placeholder="e.g. 1,000"
-                  className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-[#26382f] focus:ring-2 focus:ring-[#26382f]/10 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="edit-limit-frequency" className="text-sm font-medium text-slate-700">
-                  Reset frequency
-                </label>
-                <select
-                  id="edit-limit-frequency"
-                  value={editLimitFrequency}
-                  disabled={hasNoLimit}
-                  onChange={(event) => setEditLimitFrequency(event.target.value as "daily" | "weekly" | "monthly" | "yearly")}
-                  className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-[#26382f] focus:ring-2 focus:ring-[#26382f]/10 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
-                >
-                  <option value="daily">Daily</option>
-                  <option value="weekly">Weekly</option>
-                  <option value="monthly">Monthly</option>
-                  <option value="yearly">Yearly</option>
-                </select>
-              </div>
-            </div>
-
-            <label className="flex cursor-pointer items-start gap-2.5 rounded-lg border border-slate-200 p-3 transition hover:bg-slate-50">
+            <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-gray-200 px-3 py-3 transition hover:border-[#26382f]/50">
               <input
                 type="checkbox"
                 checked={hasNoLimit}
@@ -279,40 +378,173 @@ const EditEmployeeModal = ({
                   setHasNoLimit(event.target.checked);
                   setEditError("");
                 }}
-                className="mt-0.5 h-4 w-4 accent-[#26382f]"
+                className="mt-1 accent-[#26382f]"
               />
               <span>
-                <span className="block text-sm font-medium text-slate-800">No spending limit</span>
-                <span className="mt-0.5 block text-xs leading-5 text-slate-500">
-                  Allow spending without a set dollar cap.
+                <span className="block text-sm font-medium text-gray-800">
+                  No spending limits
+                </span>
+                <span className="mt-1 block text-xs leading-5 text-gray-500">
+                  Remove all category spending limits from this
+                  employee's card.
                 </span>
               </span>
             </label>
-          </div>
+
+            {!hasNoLimit && (
+              <>
+                {spendingLimits.map((limit, index) => (
+                  <div
+                    key={limit.id}
+                    className="space-y-3 rounded-xl border border-gray-200 p-4"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-sm font-medium text-gray-800">
+                        Category {index + 1}
+                      </span>
+
+                      <button
+                        type="button"
+                        aria-label={`Remove category ${index + 1}`}
+                        onClick={() => removeSpendingLimit(limit.id)}
+                        className="text-sm font-medium text-red-600 transition hover:text-red-700"
+                      >
+                        Remove
+                      </button>
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor={`edit-category-${limit.id}`}
+                        className={labelClassName}
+                      >
+                        Category
+                      </label>
+                      <select
+                        id={`edit-category-${limit.id}`}
+                        value={limit.category}
+                        required
+                        onChange={(event) =>
+                          updateSpendingLimit(
+                            limit.id,
+                            "category",
+                            event.target.value
+                          )
+                        }
+                        className={inputClassName}
+                      >
+                        <option value="">Select a category</option>
+                        {categories.map((option) => (
+                          <option
+                            key={option}
+                            value={option}
+                            disabled={spendingLimits.some(
+                              (other) =>
+                                other.id !== limit.id &&
+                                other.category === option
+                            )}
+                          >
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <div>
+                        <label
+                          htmlFor={`edit-amount-${limit.id}`}
+                          className={labelClassName}
+                        >
+                          Limit amount ($)
+                        </label>
+                        <input
+                          id={`edit-amount-${limit.id}`}
+                          type="number"
+                          min="0.01"
+                          step="0.01"
+                          inputMode="decimal"
+                          required
+                          value={limit.amount}
+                          onChange={(event) =>
+                            updateSpendingLimit(
+                              limit.id,
+                              "amount",
+                              event.target.value
+                            )
+                          }
+                          placeholder="Enter amount"
+                          className={inputClassName}
+                        />
+                      </div>
+
+                      <div>
+                        <label
+                          htmlFor={`edit-frequency-${limit.id}`}
+                          className={labelClassName}
+                        >
+                          Reset frequency
+                        </label>
+                        <select
+                          id={`edit-frequency-${limit.id}`}
+                          value={limit.frequency}
+                          onChange={(event) =>
+                            updateSpendingLimit(
+                              limit.id,
+                              "frequency",
+                              event.target.value
+                            )
+                          }
+                          className={inputClassName}
+                        >
+                          <option value="daily">Daily</option>
+                          <option value="weekly">Weekly</option>
+                          <option value="monthly">Monthly</option>
+                          <option value="yearly">Yearly</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                <button
+                  type="button"
+                  onClick={addSpendingLimit}
+                  className="w-full rounded-lg border border-dashed border-gray-300 px-4 py-3 text-sm font-medium text-[#26382f] transition hover:border-[#26382f] hover:bg-gray-50"
+                >
+                  + Add category
+                </button>
+              </>
+            )}
+          </fieldset>
 
           {editError && (
-            <p role="alert" className="text-sm text-red-600">
+            <p
+              role="alert"
+              aria-live="polite"
+              className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"
+            >
               {editError}
             </p>
           )}
 
-          <div className="flex justify-end gap-3 border-t border-slate-100 pt-4">
+          <div className="flex justify-end gap-3 border-t border-gray-200 pt-4">
             <button
               type="button"
               onClick={handleClose}
-              className="cursor-pointer rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+              className="rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="cursor-pointer rounded-md bg-[#26382f] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#344a3e] focus:outline-none focus:ring-2 focus:ring-[#26382f]/30"
+              className="rounded-lg bg-[#26382f] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#344b3e] focus:outline-none focus:ring-2 focus:ring-[#26382f]/40 focus:ring-offset-2"
             >
               Save changes
             </button>
           </div>
         </form>
-      </div>
+      </section>
     </div>
   );
 };

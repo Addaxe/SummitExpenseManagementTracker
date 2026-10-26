@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import InsightsSection from "../components/dashboard/InsightsSection";
 import PeopleSection from "../components/dashboard/PeopleSection/PeopleSection";
+import RolesSection from "../components/dashboard/RolesSection/RolesSection";
 
 import ProfilePlaceholder from "../assets/dashboarddesigns/profileplaceholder.avif"
 import ViewSidebarOutlinedIcon from '@mui/icons-material/ViewSidebarOutlined';
 import AutoGraphIcon from '@mui/icons-material/AutoGraph';
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
+import SettingsIcon from '@mui/icons-material/Settings';
 import CreditCardOutlinedIcon from '@mui/icons-material/CreditCardOutlined';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
@@ -220,6 +222,7 @@ const Dashboard = () => {
   {name: "Insights", icon: AutoGraphIcon,},
   {name: "Transactions", icon: CurrencyExchangeIcon,},
   {name: "People", icon: PeopleOutlinedIcon,},
+  {name: "Roles", icon: SettingsIcon,},
   {name: "Card Services", icon: CreditCardOutlinedIcon,},
   ];
 
@@ -290,6 +293,9 @@ const Dashboard = () => {
             )}
             {activeSection === "People" && (
               <PeopleSection/>
+            )}
+            {activeSection === "Roles" && (
+              <RolesSection/>
             )}
           </div>
         </div>

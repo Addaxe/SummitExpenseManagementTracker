@@ -1,17 +1,33 @@
+
 import { useState, type FormEvent } from "react";
+
+export interface EmployeeSpendingLimit {
+  category: string;
+  amount: number;
+  frequency: "daily" | "weekly" | "monthly" | "yearly";
+}
+
 export interface NewEmployee {
   name: string;
   email: string;
   role: string;
   department: string;
-  cardLimit: number | null;
-  cardLimitFrequency: "daily" | "weekly" | "monthly" | "yearly";
+  spendingLimits: EmployeeSpendingLimit[];
 }
+
 interface InviteEmployeeModalProps {
   isOpen: boolean;
   onClose: () => void;
   onInvite: (employee: NewEmployee) => void;
 }
+
+interface SpendingLimitForm {
+  id: string;
+  category: string;
+  amount: string;
+  frequency: "daily" | "weekly" | "monthly" | "yearly";
+}
+
 const roles = [
   "Employee",
   "Manager",
@@ -22,6 +38,7 @@ const roles = [
   "HR Manager",
   "Data Scientist",
 ];
+
 const departments = [
   "Engineering",
   "Design",
@@ -34,6 +51,27 @@ const departments = [
   "Data",
   "Other",
 ];
+
+const categories = [
+  "Meals",
+  "Travel",
+  "Software",
+  "Office Supplies",
+  "Transportation",
+  "Entertainment",
+  "Equipment",
+  "Other",
+];
+
+const createDefaultLimits = (): SpendingLimitForm[] => [
+  {
+    id: crypto.randomUUID(),
+    category: "Meals",
+    amount: "300",
+    frequency: "monthly",
+  },
+];
+
 const InviteEmployeeModal = ({
   isOpen,
   onClose,
@@ -43,67 +81,159 @@ const InviteEmployeeModal = ({
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("Employee");
   const [department, setDepartment] = useState("");
-  const [customLimit, setCustomLimit] = useState("1000");
-  const [limitFrequency, setLimitFrequency] = useState<"daily" | "weekly" | "monthly" | "yearly">("monthly");
+  const [spendingLimits, setSpendingLimits] =
+    useState<SpendingLimitForm[]>(createDefaultLimits);
   const [hasNoLimit, setHasNoLimit] = useState(false);
   const [error, setError] = useState("");
+
+  const inputClassName =
+    "w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition focus:border-[#26382f] focus:ring-2 focus:ring-[#26382f]/15 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400";
+
+  const labelClassName =
+    "mb-1.5 block text-sm font-medium text-gray-700";
+
   if (!isOpen) {
     return null;
   }
+
   const resetForm = () => {
     setName("");
     setEmail("");
     setRole("Employee");
     setDepartment("");
-    setCustomLimit("1000");
-    setLimitFrequency("monthly");
+    setSpendingLimits(createDefaultLimits());
     setHasNoLimit(false);
     setError("");
   };
+
   const handleClose = () => {
     resetForm();
     onClose();
   };
+
+  const addSpendingLimit = () => {
+    setSpendingLimits((current) => [
+      ...current,
+      {
+        id: crypto.randomUUID(),
+        category: "",
+        amount: "",
+        frequency: "monthly",
+      },
+    ]);
+    setError("");
+  };
+
+  const removeSpendingLimit = (id: string) => {
+    setSpendingLimits((current) =>
+      current.filter((limit) => limit.id !== id)
+    );
+    setError("");
+  };
+
+  const updateSpendingLimit = (
+    id: string,
+    field: "category" | "amount" | "frequency",
+    value: string
+  ) => {
+    setSpendingLimits((current) =>
+      current.map((limit) =>
+        limit.id === id
+          ? { ...limit, [field]: value }
+          : limit
+      )
+    );
+
+    setError("");
+  };
+
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
+
     const trimmedName = name.trim();
     const normalizedEmail = email.trim().toLowerCase();
+
     if (!trimmedName) {
       setError("Please enter the employee's full name.");
       return;
     }
+
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
     if (!emailPattern.test(normalizedEmail)) {
       setError("Please enter a valid email address.");
       return;
     }
-    let cardLimit: number | null = null;
+
+    let parsedLimits: EmployeeSpendingLimit[] = [];
+
     if (!hasNoLimit) {
-      cardLimit = Number(customLimit);
-      if (!customLimit.trim() || !Number.isFinite(cardLimit) || cardLimit <= 0) {
-        setError("Enter a valid spending limit greater than zero, or select no spending limit.");
+      if (spendingLimits.length === 0) {
+        setError(
+          "Add at least one spending category or select no spending limit."
+        );
         return;
       }
+
+      if (spendingLimits.some((limit) => !limit.category)) {
+        setError("Select a category for each spending limit.");
+        return;
+      }
+
+      const selectedCategories = spendingLimits.map((limit) =>
+        limit.category.trim().toLowerCase()
+      );
+
+      if (
+        new Set(selectedCategories).size !==
+        selectedCategories.length
+      ) {
+        setError(
+          "Each spending category can only be added once."
+        );
+        return;
+      }
+
+      const hasInvalidAmount = spendingLimits.some((limit) => {
+        const amount = Number(limit.amount);
+
+        return (
+          !limit.amount.trim() ||
+          !Number.isFinite(amount) ||
+          amount <= 0
+        );
+      });
+
+      if (hasInvalidAmount) {
+        setError(
+          "Each spending limit must be greater than zero."
+        );
+        return;
+      }
+
+      parsedLimits = spendingLimits.map((limit) => ({
+        category: limit.category,
+        amount: Number(limit.amount),
+        frequency: limit.frequency,
+      }));
     }
+
     onInvite({
       name: trimmedName,
       email: normalizedEmail,
       role,
       department,
-      cardLimit,
-      cardLimitFrequency: limitFrequency,
+      spendingLimits: parsedLimits,
     });
+
     resetForm();
     onClose();
   };
-  const inputClassName =
-    "w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition focus:border-[#26382f] focus:ring-2 focus:ring-[#26382f]/15";
-  const labelClassName =
-    "mb-1.5 block text-sm font-medium text-gray-700";
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/40 p-4 top-17.5"
+      className="fixed inset-0 top-17.5 z-50 flex items-center justify-center overflow-y-auto bg-black/40 p-4"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) {
           handleClose();
@@ -124,10 +254,12 @@ const InviteEmployeeModal = ({
             >
               Invite employee
             </h2>
+
             <p className="mt-1 text-sm text-gray-500">
               Add a team member to your Summit workspace.
             </p>
           </div>
+
           <button
             aria-label="Close invite modal"
             className="rounded-lg px-2 py-1 text-xl text-gray-500 transition hover:bg-gray-100 hover:text-gray-900"
@@ -137,11 +269,19 @@ const InviteEmployeeModal = ({
             ×
           </button>
         </div>
-        <form className="space-y-4 px-6 py-5" onSubmit={handleSubmit}>
+
+        <form
+          className="space-y-5 px-6 py-5"
+          onSubmit={handleSubmit}
+        >
           <div>
-            <label className={labelClassName} htmlFor="invite-name">
+            <label
+              className={labelClassName}
+              htmlFor="invite-name"
+            >
               Full name
             </label>
+
             <input
               autoComplete="name"
               className={inputClassName}
@@ -152,10 +292,15 @@ const InviteEmployeeModal = ({
               value={name}
             />
           </div>
+
           <div>
-            <label className={labelClassName} htmlFor="invite-email">
+            <label
+              className={labelClassName}
+              htmlFor="invite-email"
+            >
               Work email
             </label>
+
             <input
               autoComplete="email"
               className={inputClassName}
@@ -167,11 +312,16 @@ const InviteEmployeeModal = ({
               value={email}
             />
           </div>
+
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className={labelClassName} htmlFor="invite-role">
+              <label
+                className={labelClassName}
+                htmlFor="invite-role"
+              >
                 Role
               </label>
+
               <select
                 className={inputClassName}
                 id="invite-role"
@@ -185,17 +335,25 @@ const InviteEmployeeModal = ({
                 ))}
               </select>
             </div>
+
             <div>
-              <label className={labelClassName} htmlFor="invite-department">
+              <label
+                className={labelClassName}
+                htmlFor="invite-department"
+              >
                 Department
               </label>
+
               <select
                 className={inputClassName}
                 id="invite-department"
-                onChange={(event) => setDepartment(event.target.value)}
+                onChange={(event) =>
+                  setDepartment(event.target.value)
+                }
                 value={department}
               >
                 <option value="">Not assigned</option>
+
                 {departments.map((option) => (
                   <option key={option} value={option}>
                     {option}
@@ -204,65 +362,176 @@ const InviteEmployeeModal = ({
               </select>
             </div>
           </div>
-          <fieldset className="space-y-2">
-            <legend className={labelClassName}>Spending limit</legend>
-            <p className="text-xs leading-5 text-gray-500">
-              Set how much this employee can spend before the limit resets.
-            </p>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div>
-                <label className={labelClassName} htmlFor="invite-custom-limit">
-                  Limit amount ($)
-                </label>
-                <input
-                  className={inputClassName}
-                  disabled={hasNoLimit}
-                  id="invite-custom-limit"
-                  min="0.01"
-                  onChange={(event) => setCustomLimit(event.target.value)}
-                  placeholder="Enter amount"
-                  step="0.01"
-                  type="number"
-                  value={customLimit}
-                />
-              </div>
-              <div>
-                <label className={labelClassName} htmlFor="invite-limit-frequency">
-                  Reset frequency
-                </label>
-                <select
-                  className={inputClassName}
-                  disabled={hasNoLimit}
-                  id="invite-limit-frequency"
-                  onChange={(event) =>
-                    setLimitFrequency(event.target.value as typeof limitFrequency)
-                  }
-                  value={limitFrequency}
-                >
-                  <option value="daily">Daily</option>
-                  <option value="weekly">Weekly</option>
-                  <option value="monthly">Monthly</option>
-                  <option value="yearly">Yearly</option>
-                </select>
-              </div>
+
+          <fieldset className="space-y-4">
+            <div>
+              <legend className={labelClassName}>
+                Spending categories
+              </legend>
+
+              <p className="text-xs leading-5 text-gray-500">
+                Set a separate spending limit and reset frequency
+                for each category.
+              </p>
             </div>
+
             <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-gray-200 px-3 py-3 transition hover:border-[#26382f]/50">
               <input
                 checked={hasNoLimit}
                 className="mt-1 accent-[#26382f]"
-                onChange={(event) => setHasNoLimit(event.target.checked)}
+                onChange={(event) => {
+                  setHasNoLimit(event.target.checked);
+                  setError("");
+                }}
                 type="checkbox"
               />
+
               <span>
                 <span className="block text-sm font-medium text-gray-800">
-                  No spending limit
+                  No spending limits
                 </span>
+
                 <span className="mt-1 block text-xs leading-5 text-gray-500">
-                  This employee will not have a spending cap assigned in Summit.
+                  Do not assign category spending limits to this
+                  employee.
                 </span>
               </span>
             </label>
+
+            {!hasNoLimit && (
+              <>
+                {spendingLimits.map((limit, index) => (
+                  <div
+                    className="space-y-3 rounded-xl border border-gray-200 p-4"
+                    key={limit.id}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-sm font-medium text-gray-800">
+                        Category {index + 1}
+                      </span>
+
+                      <button
+                        aria-label={`Remove category ${index + 1}`}
+                        className="text-sm font-medium text-red-600 transition hover:text-red-700"
+                        onClick={() =>
+                          removeSpendingLimit(limit.id)
+                        }
+                        type="button"
+                      >
+                        Remove
+                      </button>
+                    </div>
+
+                    <div>
+                      <label
+                        className={labelClassName}
+                        htmlFor={`category-${limit.id}`}
+                      >
+                        Category
+                      </label>
+
+                      <select
+                        className={inputClassName}
+                        id={`category-${limit.id}`}
+                        onChange={(event) =>
+                          updateSpendingLimit(
+                            limit.id,
+                            "category",
+                            event.target.value
+                          )
+                        }
+                        required
+                        value={limit.category}
+                      >
+                        <option value="">
+                          Select a category
+                        </option>
+
+                        {categories.map((option) => (
+                          <option
+                            key={option}
+                            value={option}
+                            disabled={spendingLimits.some(
+                              (other) =>
+                                other.id !== limit.id &&
+                                other.category === option
+                            )}
+                          >
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <div>
+                        <label
+                          className={labelClassName}
+                          htmlFor={`amount-${limit.id}`}
+                        >
+                          Limit amount ($)
+                        </label>
+
+                        <input
+                          className={inputClassName}
+                          id={`amount-${limit.id}`}
+                          min="0.01"
+                          onChange={(event) =>
+                            updateSpendingLimit(
+                              limit.id,
+                              "amount",
+                              event.target.value
+                            )
+                          }
+                          placeholder="Enter amount"
+                          required
+                          step="0.01"
+                          type="number"
+                          value={limit.amount}
+                        />
+                      </div>
+
+                      <div>
+                        <label
+                          className={labelClassName}
+                          htmlFor={`frequency-${limit.id}`}
+                        >
+                          Reset frequency
+                        </label>
+
+                        <select
+                          className={inputClassName}
+                          id={`frequency-${limit.id}`}
+                          onChange={(event) =>
+                            updateSpendingLimit(
+                              limit.id,
+                              "frequency",
+                              event.target.value as SpendingLimitForm["frequency"]
+                            )
+                          }
+                          value={limit.frequency}
+                        >
+                          <option value="daily">Daily</option>
+                          <option value="weekly">Weekly</option>
+                          <option value="monthly">Monthly</option>
+                          <option value="yearly">Yearly</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                <button
+                  className="w-full rounded-lg border border-dashed border-gray-300 px-4 py-3 text-sm font-medium text-[#26382f] transition hover:border-[#26382f] hover:bg-gray-50"
+                  onClick={addSpendingLimit}
+                  type="button"
+                >
+                  + Add category
+                </button>
+              </>
+            )}
           </fieldset>
+
           {error && (
             <p
               aria-live="polite"
@@ -272,6 +541,7 @@ const InviteEmployeeModal = ({
               {error}
             </p>
           )}
+
           <div className="flex justify-end gap-3 border-t border-gray-200 pt-4">
             <button
               className="rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
@@ -280,6 +550,7 @@ const InviteEmployeeModal = ({
             >
               Cancel
             </button>
+
             <button
               className="rounded-lg bg-[#26382f] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#344b3e] focus:outline-none focus:ring-2 focus:ring-[#26382f]/40 focus:ring-offset-2"
               type="submit"
@@ -292,4 +563,5 @@ const InviteEmployeeModal = ({
     </div>
   );
 };
+
 export default InviteEmployeeModal;

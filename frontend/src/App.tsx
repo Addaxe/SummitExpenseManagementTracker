@@ -7,6 +7,7 @@ import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/Navbar";
 import CompanySetup from "./pages/CompanySetup";
+import AcceptInvitation from "./pages/AcceptInvitation";
 import "./styles/index.css";
 import './App.css'
 
@@ -23,6 +24,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/company-setup" element={<CompanySetup />} />
+          <Route path="/accept-invitation" element={<AcceptInvitation />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
