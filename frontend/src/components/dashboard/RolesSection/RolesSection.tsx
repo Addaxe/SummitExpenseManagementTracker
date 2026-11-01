@@ -279,7 +279,7 @@ export default function RolesSection() {
 
           <button
             onClick={openAddModal}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#26382f] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#344a3d]"
+            className="cursor-pointer inline-flex items-center justify-center gap-2 rounded-md bg-[#26382f] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#344a3d]"
           >
             <Add fontSize="small" />
             Create role

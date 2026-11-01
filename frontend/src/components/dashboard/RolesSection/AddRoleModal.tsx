@@ -53,7 +53,7 @@ export default function AddRoleModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      className="fixed top-17.5 inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget && !saving) {
           onClose();
@@ -115,7 +115,7 @@ export default function AddRoleModal({
               type="button"
               disabled={saving}
               onClick={onClose}
-              className="rounded-xl border border-gray-200 px-5 py-2.5 text-sm font-semibold hover:bg-gray-50 disabled:opacity-50"
+              className="cursor-pointer rounded-xl border border-gray-200 px-5 py-2.5 text-sm font-semibold hover:bg-gray-50 disabled:opacity-50"
             >
               Cancel
             </button>

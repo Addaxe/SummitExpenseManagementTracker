@@ -26,5 +26,11 @@ class Permission(db.Model):
         nullable=False,
     )
 
+    roles = db.relationship(
+        "Role",
+        secondary="role_permissions",
+        back_populates="permissions",
+    )
+
     def __repr__(self):
         return f"<Permission {self.key}>"

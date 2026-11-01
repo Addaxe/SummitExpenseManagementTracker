@@ -56,8 +56,9 @@ class Role(db.Model):
     permissions = db.relationship(
         "Permission",
         secondary=role_permissions,
+        back_populates="roles",
         lazy="selectin",
-    )
+    )   
 
     # Users assigned to this role.
     employees = db.relationship(

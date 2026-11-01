@@ -21,15 +21,6 @@ class User(db.Model):
     email = db.Column(db.String(255), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
 
-    # Connect this user to a customizable database role.
-    # Nullable initially to support existing users during migration.
-    role_id = db.Column(
-        db.Integer,
-        db.ForeignKey("roles.id"),
-        nullable=True,
-        index=True,
-    )
-
     department = db.Column(db.String(100), nullable=True)
 
     company_id = db.Column(
@@ -62,6 +53,15 @@ class User(db.Model):
     role = db.relationship(
         "Role",
         back_populates="employees",
+    )
+
+    # Connect this user to a customizable database role.
+    # Nullable initially to support existing users during migration.
+    role_id = db.Column(
+        db.Integer,
+        db.ForeignKey("roles.id"),
+        nullable=True,
+        index=True,
     )
 
     cards = db.relationship(

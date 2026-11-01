@@ -1,5 +1,5 @@
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 
 export interface EmployeeSpendingLimit {
   category: string;
@@ -7,18 +7,21 @@ export interface EmployeeSpendingLimit {
   frequency: "daily" | "weekly" | "monthly" | "yearly";
 }
 
-export interface NewEmployee {
+export interface EditableEmployee {
+  id: string;
   name: string;
   email: string;
   role: string;
   department: string;
   spendingLimits: EmployeeSpendingLimit[];
+  status: string;
 }
 
-interface InviteEmployeeModalProps {
+interface EditEmployeeModalProps {
   isOpen: boolean;
+  employee: EditableEmployee | null;
   onClose: () => void;
-  onInvite: (employee: NewEmployee) => void;
+  onSave: (employee: EditableEmployee) => void;
 }
 
 interface SpendingLimitForm {
@@ -63,51 +66,53 @@ const categories = [
   "Other",
 ];
 
-const createDefaultLimits = (): SpendingLimitForm[] => [
-  {
+const inputClassName =
+  "w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition focus:border-[#26382f] focus:ring-2 focus:ring-[#26382f]/15 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400";
+
+const labelClassName =
+  "mb-1.5 block text-sm font-medium text-gray-700";
+
+const createLimitForm = (
+  limits: EmployeeSpendingLimit[] = []
+): SpendingLimitForm[] =>
+  limits.map((limit) => ({
     id: crypto.randomUUID(),
-    category: "Meals",
-    amount: "300",
-    frequency: "monthly",
-  },
-];
+    category: limit.category,
+    amount: String(limit.amount),
+    frequency: limit.frequency,
+  }));
 
-const InviteEmployeeModal = ({
+const EditEmployeeModal = ({
   isOpen,
+  employee,
   onClose,
-  onInvite,
-}: InviteEmployeeModalProps) => {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [role, setRole] = useState("Employee");
-  const [department, setDepartment] = useState("");
+  onSave,
+}: EditEmployeeModalProps) => {
+  const [editName, setEditName] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [editRole, setEditRole] = useState("Employee");
+  const [editDepartment, setEditDepartment] = useState("");
   const [spendingLimits, setSpendingLimits] =
-    useState<SpendingLimitForm[]>(createDefaultLimits);
+    useState<SpendingLimitForm[]>([]);
   const [hasNoLimit, setHasNoLimit] = useState(false);
-  const [error, setError] = useState("");
+  const [editError, setEditError] = useState("");
 
-  const inputClassName =
-    "w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition focus:border-[#26382f] focus:ring-2 focus:ring-[#26382f]/15 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400";
+  useEffect(() => {
+    if (!employee || !isOpen) return;
 
-  const labelClassName =
-    "mb-1.5 block text-sm font-medium text-gray-700";
+    setEditName(employee.name);
+    setEditEmail(employee.email);
+    setEditRole(employee.role);
+    setEditDepartment(employee.department);
+    setSpendingLimits(createLimitForm(employee.spendingLimits));
+    setHasNoLimit(employee.spendingLimits.length === 0);
+    setEditError("");
+  }, [employee, isOpen]);
 
-  if (!isOpen) {
-    return null;
-  }
-
-  const resetForm = () => {
-    setName("");
-    setEmail("");
-    setRole("Employee");
-    setDepartment("");
-    setSpendingLimits(createDefaultLimits());
-    setHasNoLimit(false);
-    setError("");
-  };
+  if (!isOpen || !employee) return null;
 
   const handleClose = () => {
-    resetForm();
+    setEditError("");
     onClose();
   };
 
@@ -121,14 +126,15 @@ const InviteEmployeeModal = ({
         frequency: "monthly",
       },
     ]);
-    setError("");
+    setHasNoLimit(false);
+    setEditError("");
   };
 
   const removeSpendingLimit = (id: string) => {
     setSpendingLimits((current) =>
       current.filter((limit) => limit.id !== id)
     );
-    setError("");
+    setEditError("");
   };
 
   const updateSpendingLimit = (
@@ -138,31 +144,28 @@ const InviteEmployeeModal = ({
   ) => {
     setSpendingLimits((current) =>
       current.map((limit) =>
-        limit.id === id
-          ? { ...limit, [field]: value }
-          : limit
+        limit.id === id ? { ...limit, [field]: value } : limit
       )
     );
-
-    setError("");
+    setEditError("");
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSaveEmployee = (
+    event: FormEvent<HTMLFormElement>
+  ) => {
     event.preventDefault();
-    setError("");
+    setEditError("");
 
-    const trimmedName = name.trim();
-    const normalizedEmail = email.trim().toLowerCase();
+    const name = editName.trim();
+    const email = editEmail.trim().toLowerCase();
 
-    if (!trimmedName) {
-      setError("Please enter the employee's full name.");
+    if (!name) {
+      setEditError("Please enter the employee's full name.");
       return;
     }
 
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if (!emailPattern.test(normalizedEmail)) {
-      setError("Please enter a valid email address.");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setEditError("Enter a valid work email address.");
       return;
     }
 
@@ -170,14 +173,16 @@ const InviteEmployeeModal = ({
 
     if (!hasNoLimit) {
       if (spendingLimits.length === 0) {
-        setError(
+        setEditError(
           "Add at least one spending category or select no spending limit."
         );
         return;
       }
 
       if (spendingLimits.some((limit) => !limit.category)) {
-        setError("Select a category for each spending limit.");
+        setEditError(
+          "Select a category for each spending limit."
+        );
         return;
       }
 
@@ -189,7 +194,7 @@ const InviteEmployeeModal = ({
         new Set(selectedCategories).size !==
         selectedCategories.length
       ) {
-        setError(
+        setEditError(
           "Each spending category can only be added once."
         );
         return;
@@ -206,7 +211,7 @@ const InviteEmployeeModal = ({
       });
 
       if (hasInvalidAmount) {
-        setError(
+        setEditError(
           "Each spending limit must be greater than zero."
         );
         return;
@@ -219,15 +224,15 @@ const InviteEmployeeModal = ({
       }));
     }
 
-    onInvite({
-      name: trimmedName,
-      email: normalizedEmail,
-      role,
-      department,
+    onSave({
+      ...employee,
+      name,
+      email,
+      role: editRole,
+      department: editDepartment,
       spendingLimits: parsedLimits,
     });
 
-    resetForm();
     onClose();
   };
 
@@ -241,92 +246,84 @@ const InviteEmployeeModal = ({
       }}
     >
       <section
-        aria-labelledby="invite-employee-title"
-        aria-modal="true"
-        className="my-auto max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white shadow-xl"
         role="dialog"
+        aria-modal="true"
+        aria-labelledby="edit-employee-title"
+        className="my-auto max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white shadow-xl"
       >
         <div className="flex items-start justify-between border-b border-gray-200 px-6 py-5">
           <div>
             <h2
+              id="edit-employee-title"
               className="text-xl font-semibold text-[#26382f]"
-              id="invite-employee-title"
             >
-              Invite employee
+              Edit employee
             </h2>
-
             <p className="mt-1 text-sm text-gray-500">
-              Add a team member to your Summit workspace.
+              Update employee details and card spending limits.
             </p>
           </div>
 
           <button
-            aria-label="Close invite modal"
-            className="rounded-lg px-2 py-1 text-xl text-gray-500 transition hover:bg-gray-100 hover:text-gray-900"
-            onClick={handleClose}
             type="button"
+            aria-label="Close edit employee modal"
+            onClick={handleClose}
+            className="cursor-pointer rounded-lg px-3 py-1 text-xl text-gray-500 transition hover:bg-gray-100 hover:text-gray-900"
           >
             ×
           </button>
         </div>
 
         <form
+          onSubmit={handleSaveEmployee}
           className="space-y-5 px-6 py-5"
-          onSubmit={handleSubmit}
         >
           <div>
-            <label
-              className={labelClassName}
-              htmlFor="invite-name"
-            >
+            <label htmlFor="edit-name" className={labelClassName}>
               Full name
             </label>
-
             <input
+              id="edit-name"
+              type="text"
               autoComplete="name"
-              className={inputClassName}
-              id="invite-name"
-              onChange={(event) => setName(event.target.value)}
-              placeholder="e.g. Jane Doe"
               required
-              value={name}
+              value={editName}
+              onChange={(event) => {
+                setEditName(event.target.value);
+                setEditError("");
+              }}
+              className={inputClassName}
             />
           </div>
 
           <div>
-            <label
-              className={labelClassName}
-              htmlFor="invite-email"
-            >
+            <label htmlFor="edit-email" className={labelClassName}>
               Work email
             </label>
-
             <input
-              autoComplete="email"
-              className={inputClassName}
-              id="invite-email"
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder="jane@company.com"
-              required
+              id="edit-email"
               type="email"
-              value={email}
+              autoComplete="email"
+              required
+              value={editEmail}
+              onChange={(event) => {
+                setEditEmail(event.target.value);
+                setEditError("");
+              }}
+              className={inputClassName}
             />
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label
-                className={labelClassName}
-                htmlFor="invite-role"
-              >
+              <label htmlFor="edit-role" className={labelClassName}>
                 Role
               </label>
-
               <select
+                id="edit-role"
+                value={editRole}
+                onChange={(event) => setEditRole(event.target.value)}
                 className={inputClassName}
-                id="invite-role"
-                onChange={(event) => setRole(event.target.value)}
-                value={role}
               >
                 {roles.map((option) => (
                   <option key={option} value={option}>
@@ -338,22 +335,20 @@ const InviteEmployeeModal = ({
 
             <div>
               <label
+                htmlFor="edit-department"
                 className={labelClassName}
-                htmlFor="invite-department"
               >
                 Department
               </label>
-
               <select
-                className={inputClassName}
-                id="invite-department"
+                id="edit-department"
+                value={editDepartment}
                 onChange={(event) =>
-                  setDepartment(event.target.value)
+                  setEditDepartment(event.target.value)
                 }
-                value={department}
+                className={inputClassName}
               >
                 <option value="">Not assigned</option>
-
                 {departments.map((option) => (
                   <option key={option} value={option}>
                     {option}
@@ -363,37 +358,35 @@ const InviteEmployeeModal = ({
             </div>
           </div>
 
-          <fieldset className="space-y-4">
+          <fieldset className="space-y-4 border-t border-gray-200 pt-4">
             <div>
-              <legend className={labelClassName}>
-                Spending categories
+              <legend className="text-sm font-medium text-gray-800">
+                Card spending categories
               </legend>
-
-              <p className="text-xs leading-5 text-gray-500">
-                Set a separate spending limit and reset frequency
-                for each category.
+              <p className="mt-1 text-xs leading-5 text-gray-500">
+                Manage the spending limits assigned to this
+                employee's card. Each category has its own amount
+                and reset frequency.
               </p>
             </div>
 
             <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-gray-200 px-3 py-3 transition hover:border-[#26382f]/50">
               <input
+                type="checkbox"
                 checked={hasNoLimit}
-                className="mt-1 accent-[#26382f]"
                 onChange={(event) => {
                   setHasNoLimit(event.target.checked);
-                  setError("");
+                  setEditError("");
                 }}
-                type="checkbox"
+                className="mt-1 accent-[#26382f]"
               />
-
               <span>
                 <span className="block text-sm font-medium text-gray-800">
                   No spending limits
                 </span>
-
                 <span className="mt-1 block text-xs leading-5 text-gray-500">
-                  Do not assign category spending limits to this
-                  employee.
+                  Remove all category spending limits from this
+                  employee's card.
                 </span>
               </span>
             </label>
@@ -402,8 +395,8 @@ const InviteEmployeeModal = ({
               <>
                 {spendingLimits.map((limit, index) => (
                   <div
-                    className="space-y-3 rounded-xl border border-gray-200 p-4"
                     key={limit.id}
+                    className="space-y-3 rounded-xl border border-gray-200 p-4"
                   >
                     <div className="flex items-center justify-between gap-3">
                       <span className="text-sm font-medium text-gray-800">
@@ -411,12 +404,10 @@ const InviteEmployeeModal = ({
                       </span>
 
                       <button
-                        aria-label={`Remove category ${index + 1}`}
-                        className="text-sm font-medium text-red-600 transition hover:text-red-700"
-                        onClick={() =>
-                          removeSpendingLimit(limit.id)
-                        }
                         type="button"
+                        aria-label={`Remove category ${index + 1}`}
+                        onClick={() => removeSpendingLimit(limit.id)}
+                        className="text-sm font-medium text-red-600 transition hover:text-red-700"
                       >
                         Remove
                       </button>
@@ -424,15 +415,15 @@ const InviteEmployeeModal = ({
 
                     <div>
                       <label
+                        htmlFor={`edit-category-${limit.id}`}
                         className={labelClassName}
-                        htmlFor={`category-${limit.id}`}
                       >
                         Category
                       </label>
-
                       <select
-                        className={inputClassName}
-                        id={`category-${limit.id}`}
+                        id={`edit-category-${limit.id}`}
+                        value={limit.category}
+                        required
                         onChange={(event) =>
                           updateSpendingLimit(
                             limit.id,
@@ -440,13 +431,9 @@ const InviteEmployeeModal = ({
                             event.target.value
                           )
                         }
-                        required
-                        value={limit.category}
+                        className={inputClassName}
                       >
-                        <option value="">
-                          Select a category
-                        </option>
-
+                        <option value="">Select a category</option>
                         {categories.map((option) => (
                           <option
                             key={option}
@@ -466,16 +453,19 @@ const InviteEmployeeModal = ({
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                       <div>
                         <label
+                          htmlFor={`edit-amount-${limit.id}`}
                           className={labelClassName}
-                          htmlFor={`amount-${limit.id}`}
                         >
                           Limit amount ($)
                         </label>
-
                         <input
-                          className={inputClassName}
-                          id={`amount-${limit.id}`}
+                          id={`edit-amount-${limit.id}`}
+                          type="number"
                           min="0.01"
+                          step="0.01"
+                          inputMode="decimal"
+                          required
+                          value={limit.amount}
                           onChange={(event) =>
                             updateSpendingLimit(
                               limit.id,
@@ -484,32 +474,28 @@ const InviteEmployeeModal = ({
                             )
                           }
                           placeholder="Enter amount"
-                          required
-                          step="0.01"
-                          type="number"
-                          value={limit.amount}
+                          className={inputClassName}
                         />
                       </div>
 
                       <div>
                         <label
+                          htmlFor={`edit-frequency-${limit.id}`}
                           className={labelClassName}
-                          htmlFor={`frequency-${limit.id}`}
                         >
                           Reset frequency
                         </label>
-
                         <select
-                          className={inputClassName}
-                          id={`frequency-${limit.id}`}
+                          id={`edit-frequency-${limit.id}`}
+                          value={limit.frequency}
                           onChange={(event) =>
                             updateSpendingLimit(
                               limit.id,
                               "frequency",
-                              event.target.value as SpendingLimitForm["frequency"]
+                              event.target.value
                             )
                           }
-                          value={limit.frequency}
+                          className={inputClassName}
                         >
                           <option value="daily">Daily</option>
                           <option value="weekly">Weekly</option>
@@ -522,9 +508,9 @@ const InviteEmployeeModal = ({
                 ))}
 
                 <button
-                  className="w-full rounded-lg border border-dashed border-gray-300 px-4 py-3 text-sm font-medium text-[#26382f] transition hover:border-[#26382f] hover:bg-gray-50"
-                  onClick={addSpendingLimit}
                   type="button"
+                  onClick={addSpendingLimit}
+                  className="cursor-pointer w-full rounded-lg border border-dashed border-gray-300 px-4 py-3 text-sm font-medium text-[#26382f] transition hover:border-[#26382f] hover:bg-gray-50"
                 >
                   + Add category
                 </button>
@@ -532,30 +518,29 @@ const InviteEmployeeModal = ({
             )}
           </fieldset>
 
-          {error && (
+          {editError && (
             <p
+              role="alert"
               aria-live="polite"
               className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"
-              role="alert"
             >
-              {error}
+              {editError}
             </p>
           )}
 
           <div className="flex justify-end gap-3 border-t border-gray-200 pt-4">
             <button
-              className="rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-              onClick={handleClose}
               type="button"
+              onClick={handleClose}
+              className="cursor-pointer rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
             >
               Cancel
             </button>
-
             <button
-              className="rounded-lg bg-[#26382f] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#344b3e] focus:outline-none focus:ring-2 focus:ring-[#26382f]/40 focus:ring-offset-2"
               type="submit"
+              className="cursor-pointer rounded-lg bg-[#26382f] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#344b3e] focus:outline-none focus:ring-2 focus:ring-[#26382f]/40 focus:ring-offset-2"
             >
-              Send invitation
+              Save changes
             </button>
           </div>
         </form>
@@ -564,4 +549,4 @@ const InviteEmployeeModal = ({
   );
 };
 
-export default InviteEmployeeModal;
+export default EditEmployeeModal;
