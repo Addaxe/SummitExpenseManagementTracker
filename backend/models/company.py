@@ -1,5 +1,7 @@
+
 from datetime import datetime, timezone
 import uuid
+
 from extensions import db
 from sqlalchemy.dialects.postgresql import UUID
 
@@ -40,4 +42,11 @@ class Company(db.Model):
     roles = db.relationship(
         "Role",
         back_populates="company",
+    )
+
+    # Departments belonging to this company.
+    departments = db.relationship(
+        "Department",
+        back_populates="company",
+        cascade="all, delete-orphan",
     )
