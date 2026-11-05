@@ -1,4 +1,3 @@
-
 from datetime import datetime, timezone
 import uuid
 
@@ -21,7 +20,18 @@ class User(db.Model):
     email = db.Column(db.String(255), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
 
-    department = db.Column(db.String(100), nullable=True)
+    # Assigned department
+    department_id = db.Column(
+        UUID(as_uuid=True),
+        db.ForeignKey("departments.id"),
+        nullable=True,
+        index=True,
+    )
+
+    department = db.relationship(
+        "Department",
+        back_populates="employees",
+    )
 
     company_id = db.Column(
         UUID(as_uuid=True),
@@ -49,19 +59,17 @@ class User(db.Model):
         default=lambda: datetime.now(timezone.utc),
     )
 
-    # Assigned role and its permissions.
-    role = db.relationship(
-        "Role",
-        back_populates="employees",
-    )
-
-    # Connect this user to a customizable database role.
-    # Nullable initially to support existing users during migration.
+    # Assigned role and its permissions
     role_id = db.Column(
         db.Integer,
         db.ForeignKey("roles.id"),
         nullable=True,
         index=True,
+    )
+
+    role = db.relationship(
+        "Role",
+        back_populates="employees",
     )
 
     cards = db.relationship(
@@ -93,6 +101,7 @@ class User(db.Model):
 
     def has_permission(self, permission_key):
         """Check whether this user has a specific permission."""
+
         if not self.is_active or self.role is None:
             return False
 

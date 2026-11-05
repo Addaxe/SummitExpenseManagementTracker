@@ -1,7 +1,5 @@
-
 from sqlalchemy.dialects.postgresql import UUID
 from extensions import db
-from models.permission import Permission
 
 role_permissions = db.Table(
     "role_permissions",
@@ -58,14 +56,15 @@ class Role(db.Model):
         secondary=role_permissions,
         back_populates="roles",
         lazy="selectin",
-    )   
+    )
 
-    # Users assigned to this role.
+    # Employees assigned to this role.
     employees = db.relationship(
         "User",
         back_populates="role",
     )
 
+    # Company that owns this role.
     company = db.relationship(
         "Company",
         back_populates="roles",
@@ -80,7 +79,7 @@ class Role(db.Model):
     )
 
     def has_permission(self, permission_key):
-        """Return True if this role has the specified permission."""
+        """Check whether this role has a specific permission."""
         return any(
             permission.key == permission_key
             for permission in self.permissions

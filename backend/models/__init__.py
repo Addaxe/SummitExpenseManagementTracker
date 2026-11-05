@@ -5,5 +5,6 @@ from .employeeinvitation import EmployeeInvitation
 from .expensecategory import ExpenseCategory
 from .permission import Permission
 from .role import Role
+from .department import Department
 from .spendinglimit import EmployeeSpendingLimit
 from .transaction import Transaction
